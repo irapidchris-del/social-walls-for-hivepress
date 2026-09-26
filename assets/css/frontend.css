@@ -1,0 +1,900 @@
+/* Social Walls for HivePress: front-end styles.
+ *
+ * Only what HivePress and the themes do not already provide. The card itself carries core's
+ * `hp-listing hp-listing--view-block` classes, so each theme's own card look reaches it untouched;
+ * the rules here lay out the pieces that are ours (the byline, the Deal box, the heart). Sizes are
+ * rem on core's spacing scale and percentages for type, so everything scales with the theme
+ * (resources/hivepress-ui.md, "Native look and feel"). Every selector is scoped to an `hpsw-`
+ * class, so nothing here can reach anything else on the page.
+ */
+
+/* ---------------------------------------------------------------------
+ * Buttons that are links.
+ *
+ * Themes style the bare `button` element (background, padding, shadow). These controls are
+ * text-and-icon links that happen to be buttons for keyboard and screen-reader reasons, so the
+ * theme's button look is taken off them here, at a specificity a theme's `button:hover` (0,1,1)
+ * cannot reach.
+ * ------------------------------------------------------------------- */
+.hpsw-post .hpsw-post__like,
+.hpsw-comments .hpsw-comment__reply,
+.hpsw-comments .hpsw-comment__delete,
+.hpsw-comments .hpsw-comments__cancel,
+.hpsw-post-manage .hpsw-post-manage__action {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: none;
+	box-shadow: none;
+	color: inherit;
+	font: inherit;
+	line-height: inherit;
+	text-transform: none;
+	letter-spacing: normal;
+	cursor: pointer;
+}
+
+.hpsw-post .hpsw-post__like:hover,
+.hpsw-post .hpsw-post__like:focus,
+.hpsw-comments .hpsw-comment__reply:hover,
+.hpsw-comments .hpsw-comment__reply:focus,
+.hpsw-comments .hpsw-comment__delete:hover,
+.hpsw-comments .hpsw-comment__delete:focus,
+.hpsw-comments .hpsw-comments__cancel:hover,
+.hpsw-comments .hpsw-comments__cancel:focus,
+.hpsw-post-manage button.hpsw-post-manage__action:hover,
+.hpsw-post-manage button.hpsw-post-manage__action:focus {
+	background: none;
+	box-shadow: none;
+	color: inherit;
+	opacity: 0.8;
+}
+
+/* `[hidden]` loses to any class that sets `display`, including hp-link and the reset above. */
+.hpsw-comments .hpsw-comments__cancel[hidden],
+.hp-form--hpsw-post-update .hp-form__field[hidden] {
+	display: none;
+}
+
+/* ---------------------------------------------------------------------
+ * The card.
+ * ------------------------------------------------------------------- */
+.hpsw-posts > .hp-row > .hp-grid__item {
+	margin-bottom: 2rem;
+}
+
+.hpsw-post {
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+/*
+ * Cards in one row are the same height, with the footer at the bottom, as the Listings grid does
+ * (measured 26 Sept 2026, ListingHive Vendor page, two columns: Listing cards 451px and 451px, wall
+ * cards 496px and 650px before this). Core's .hp-row is a flex row, so its items already stretch
+ * to the tallest; the card fills its item and its content takes the spare height.
+ */
+.hpsw-posts > .hp-row > .hp-grid__item > .hpsw-post--view-block {
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	height: 100%;
+}
+
+.hpsw-posts > .hp-row > .hp-grid__item > .hpsw-post--view-block > .hp-listing__content {
+	flex-grow: 1;
+}
+
+.hpsw-post .hpsw-post__image {
+	position: relative;
+	margin-bottom: 1rem;
+	overflow: hidden;
+	border-radius: 0.25rem;
+}
+
+.hpsw-post .hpsw-post__image a {
+	display: block;
+}
+
+.hpsw-post .hpsw-post__image img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 16 / 10;
+	object-fit: cover;
+}
+
+.hpsw-post .hpsw-post__image-count {
+	position: absolute;
+	right: 0.5rem;
+	bottom: 0.5rem;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	padding: 0.25rem 0.5rem;
+	border-radius: 1rem;
+	background: rgba(0, 0, 0, 0.6);
+	color: #fff;
+	font-size: 80%;
+	line-height: 1.2;
+}
+
+/* The byline: avatar, Vendor and date, then the badges. Wraps on a phone rather than squeezing. */
+.hpsw-post__byline {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem 0.8rem;
+	margin-bottom: 1rem;
+}
+
+.hpsw-post__avatar {
+	flex: 0 0 auto;
+	line-height: 0;
+}
+
+.hpsw-post__avatar img {
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 50%;
+	object-fit: cover;
+}
+
+.hpsw-post__byline-text {
+	display: flex;
+	flex: 1 1 8rem;
+	flex-direction: column;
+	min-width: 0;
+	line-height: 1.3;
+}
+
+.hpsw-post__vendor {
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.hpsw-post__badges {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.hpsw-post__badges .hp-status {
+	white-space: nowrap;
+}
+
+.hpsw-post .hpsw-post__title {
+	margin-top: 0;
+}
+
+.hpsw-post .hpsw-post__text p {
+	margin: 0 0 1rem;
+}
+
+/*
+ * The card's own rhythm is the Listing card's, theme by theme. Core spaces the pieces of a Listing
+ * card 0.5rem apart (`.hp-listing--view-block .hp-listing__title:not(:last-child)` and its
+ * siblings, hivepress/assets/css/frontend.less), and three themes open that up. Measured on the
+ * Listing search results, 26 Sept 2026, gap between one piece and the next: ListingHive 8px,
+ * JobHive 8px, MeetingHive 8px, TaskHive 10px, ExpertHive 12px, RentalHive 12px. The wall card's
+ * byline, text, photo and Deal box were a flat 1rem apart, so a wall post read looser than the
+ * Listing beside it in every theme. The title keeps the theme's own title margin (it IS a Listing
+ * title), everything else follows the gap below, and the last piece hands over to the theme's own
+ * content padding. Scoped by core's `hp-theme--{template}` body class
+ * (hivepress/includes/components/class-template.php:214), so an unknown theme gets core's 0.5rem.
+ */
+.hpsw-post--view-block {
+	--hpsw-card-gap: 0.5rem;
+}
+
+.hp-theme--taskhive .hpsw-post--view-block {
+	--hpsw-card-gap: 0.625rem;
+}
+
+.hp-theme--experthive .hpsw-post--view-block,
+.hp-theme--rentalhive .hpsw-post--view-block {
+	--hpsw-card-gap: 0.75rem;
+}
+
+.hpsw-post--view-block .hpsw-post__byline,
+.hpsw-post--view-block .hpsw-post__text,
+.hpsw-post.hpsw-post--view-block .hpsw-post__image,
+.hpsw-post--view-block .hpsw-post__deal {
+	margin-bottom: var(--hpsw-card-gap);
+}
+
+.hpsw-post.hpsw-post--view-block .hpsw-post__text p {
+	margin: 0;
+}
+
+/*
+ * The name and the words under it sit as close as a Listing card's title and the line under it, measured
+ * on the letters rather than the boxes. The boxes were already the Listing card's gap, but body text
+ * carries a tall line-height (16px on a 30px line in every official theme), so its first line starts
+ * about 4px below its box, where the Listing card's next line is small meta text with almost no extra
+ * leading. Measured 28 Sept 2026 at 1300px, title to text on the letters: ListingHive 11.3px against the
+ * Listing card's 7.3px title to date, JobHive 16.3px against 12.3px. The text is pulled up by its own
+ * top half-leading less a little (0.7em is about the height of the letters plus 1px), in `lh` so it
+ * follows whatever line-height a theme or site sets; the -0.25em line is for browsers without `lh`.
+ * It is set on the paragraph, whose line-height is the one the themes give body text (the wrapper
+ * keeps the card's own, which measured 1px of pull instead of 4px), and its margin collapses through
+ * the wrapper with the title's bottom margin.
+ */
+.hpsw-post.hpsw-post--view-block .hpsw-post__title + .hpsw-post__text > p:first-child {
+	margin-top: -0.25em;
+	margin-top: calc(0.7em - 0.5lh);
+}
+
+.hpsw-post--view-block .hp-listing__content > :last-child {
+	margin-bottom: 0;
+}
+
+.hpsw-post--view-page .hpsw-post__text {
+	margin-bottom: 1rem;
+}
+
+.hpsw-post--view-page .hpsw-post__images {
+	margin-bottom: 1rem;
+}
+
+/*
+ * The Deal box, the same on a card and on a post's own page: the coupon row across the full width of
+ * the column, then a line with the end date pill and the linked Listing.
+ */
+.hpsw-post .hpsw-post__deal {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 0.5rem;
+}
+
+/*
+ * The coupon row: "Code", the code itself taking the spare width, and the Copy button at the far
+ * right end (site owner's request, 28 Sept 2026: it was a bare link beside the code, and on a post's
+ * page the whole box was 208px wide in a 730px column). A long code wraps inside its own space rather
+ * than pushing the button off the row.
+ */
+.hpsw-post .hpsw-post__coupon {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	box-sizing: border-box;
+	width: 100%;
+	min-width: 0;
+	padding: 0.375rem 0.375rem 0.375rem 0.75rem;
+	border: 1px dashed currentColor;
+	border-radius: 0.25rem;
+}
+
+.hpsw-post .hpsw-post__coupon-label {
+	flex: 0 0 auto;
+	margin: 0;
+}
+
+.hpsw-post .hpsw-post__coupon-code {
+	flex: 1 1 auto;
+	min-width: 0;
+	padding: 0;
+	background: none;
+	font-size: 100%;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	overflow-wrap: anywhere;
+	cursor: copy;
+}
+
+/*
+ * Copy is the theme's own secondary button, made small: the themes size `.button` for forms
+ * (ListingHive pads it 0.75rem 1.5rem at 100%), which would make the coupon row taller than the
+ * card's text. The selector carries three classes and the element, so the themes' `button` and
+ * `.button` rules (at most (0,1,1)) cannot put their padding or width back. It is a <button>, so
+ * HiveTheme's a:hover{color:#1db1fc} link trap does not reach its label.
+ */
+.hpsw-post .hpsw-post__coupon button.hpsw-post__coupon-copy {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: 0.4em;
+	width: auto;
+	min-width: 0;
+	height: auto;
+	min-height: 0;
+	margin: 0 0 0 auto;
+	padding: 0.375rem 0.75rem;
+	font-size: 80%;
+	line-height: 1.2;
+	white-space: nowrap;
+}
+
+/* ExpertHive, JobHive, MeetingHive and RentalHive size a button's icon at 24px, which made the small
+   button 36px tall against ListingHive's 28px; the icon follows the label here. */
+.hpsw-post .hpsw-post__coupon button.hpsw-post__coupon-copy .hp-icon {
+	margin: 0;
+	font-size: 1em;
+	line-height: 1;
+}
+
+.hpsw-post .hpsw-post__coupon button.hpsw-post__coupon-copy:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+
+.hpsw-post .hpsw-post__deal-meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem 1rem;
+}
+
+/*
+ * The end date pill: the byline's Deal / Update badge (core's `hp-status`, which the themes shape)
+ * made quieter, a soft tint of the text colour instead of a coloured outline and a smaller size, with
+ * the hourglass and the words on one line.
+ */
+.hpsw-post .hpsw-post__ends.hp-status > span {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	border-color: transparent;
+	background: rgba(0, 0, 0, 0.05);
+	background: color-mix(in srgb, currentColor 8%, transparent);
+	color: inherit;
+	padding: 0.3rem 0.5rem;
+	font-size: 65%;
+}
+
+/* The icon follows the pill's text size: at the themes' own icon size it made the pill 31px tall
+   (ListingHive) and 39px (ExpertHive) against the 26px Deal badge beside the name. */
+.hpsw-post .hpsw-post__ends.hp-status .hp-icon {
+	margin: 0;
+	font-size: 1em;
+	line-height: 1;
+	opacity: 0.8;
+}
+
+.hpsw-post .hpsw-post__ends--ended.hp-status > span {
+	opacity: 0.75;
+}
+
+/* The counts sit together on the right of the card's footer. */
+.hpsw-post--view-block .hp-listing__footer .hpsw-post__actions {
+	margin-left: auto;
+}
+
+.hpsw-post--view-block .hp-listing__footer {
+	flex-wrap: wrap;
+	gap: 0.5rem 1rem;
+}
+
+/*
+ * ExpertHive, JobHive and MeetingHive lay a Listing card out sideways from 48em: the footer becomes
+ * a column down the right-hand side (`flex-direction: column-reverse; align-items: flex-end` on
+ * `.hp-listing--view-block .hp-listing__footer`, in each theme's style.css). A Listing's footer holds
+ * two small icons, so that works; a wall post's holds the counts and the Deal's end date, and the
+ * date's column took about 200px from the post's text and photo (measured 26 Sept 2026, ExpertHive,
+ * two-column wall: text column 276px against 504px on ListingHive). So a wall card keeps the stacked
+ * shape these themes already use below 48em, with the footer as a row under the content, and the
+ * divider, padding and margins copied from each theme's own below-48em footer rule. Since 1.0.3 the
+ * end date is a pill in the Deal box and the footer holds only the counts, but the stacked shape
+ * stays: the wall's text and photo read better across the full card than beside a side column.
+ */
+@media (min-width: 48em) {
+	.hp-theme--experthive .hpsw-post--view-block,
+	.hp-theme--jobhive .hpsw-post--view-block,
+	.hp-theme--meetinghive .hpsw-post--view-block {
+		flex-direction: column;
+	}
+
+	.hp-theme--experthive .hpsw-post--view-block .hp-listing__content,
+	.hp-theme--jobhive .hpsw-post--view-block .hp-listing__content,
+	.hp-theme--meetinghive .hpsw-post--view-block .hp-listing__content {
+		margin-right: 0;
+	}
+
+	.hp-theme--experthive .hpsw-post--view-block .hp-listing__footer,
+	.hp-theme--jobhive .hpsw-post--view-block .hp-listing__footer,
+	.hp-theme--meetinghive .hpsw-post--view-block .hp-listing__footer {
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.hp-theme--experthive .hpsw-post--view-block .hp-listing__footer,
+	.hp-theme--jobhive .hpsw-post--view-block .hp-listing__footer {
+		margin: 2rem -2rem -0.75rem;
+		padding: 1.25rem 2rem 0;
+		border-top: 1px solid rgba(7, 36, 86, 0.075);
+	}
+
+	.hp-theme--meetinghive .hpsw-post--view-block .hp-listing__footer {
+		padding-top: 1rem;
+		padding-bottom: 1rem;
+	}
+}
+
+/* The heart and the comment count. */
+.hpsw-post .hpsw-post__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 1rem;
+}
+
+/*
+ * On a post's own page the row keeps its shape. The themes lay a Listing PAGE's primary actions
+ * out as a centred column of full-width buttons (measured on ListingHive at 390px: heart and
+ * comment count stacked and centred), which suits Send Message and Book but not two small counts.
+ */
+.hpsw-post--view-page .hp-listing__actions.hpsw-post__actions {
+	flex-direction: row;
+	justify-content: flex-start;
+	margin: 0;
+}
+
+.hpsw-post--view-page .hp-listing__actions.hpsw-post__actions > * {
+	width: auto;
+	margin: 0;
+}
+
+/*
+ * On a post's own page the counts are a small row on the right, directly under the photos (or under
+ * the text and Deal box when there are none, since the photos come last from 1.0.3), like a social
+ * feed (site owner's choice, 26 Sept 2026). Core gives
+ * a Listing page's photos and primary actions a 2rem bottom margin
+ * (`.hp-listing--view-page .hp-listing__images:not(:last-child)`, frontend.less), which would float
+ * the row halfway between the photo and the text, so the gaps are set here at a specificity that
+ * beats core's (0,3,0): 0.5rem from the photo to the row, 1rem from the row to what follows.
+ */
+.hpsw-post.hpsw-post--view-page .hpsw-post__images:not(:last-child),
+.hpsw-post.hpsw-post--view-page .hpsw-post__text:not(:last-child),
+.hpsw-post.hpsw-post--view-page .hpsw-post__deal:not(:last-child) {
+	margin-bottom: 1rem;
+}
+
+/* No padding or panel: MeetingHive pads a Listing page's primary actions 24px 24px 16px and RentalHive
+   0 32px, which left the counts 24px and 32px short of the photo's right edge (measured 28 Sept 2026). */
+.hpsw-post.hpsw-post--view-page .hp-listing__actions.hpsw-post__actions {
+	justify-content: flex-end;
+	padding: 0;
+	border: 0;
+	background: none;
+	box-shadow: none;
+	margin: -0.5rem 0 1rem;
+}
+
+.hpsw-post.hpsw-post--view-page .hp-listing__actions.hpsw-post__actions:last-child {
+	margin-bottom: 0;
+}
+
+/*
+ * The heart and the comment count stay together, about 1rem apart, at the right-hand end of their
+ * row, on cards and on the post page. They sit in a wrapper of their own (hpsw-post-actions.php): a
+ * site stylesheet spreading `.hp-listing__actions` children with `justify-content: space-between`
+ * put them 84px apart on a card (measured 28 Sept 2026, 1300px). The wrapper is the row's only
+ * child and takes the spare width as an auto margin, which beats any justify-content; the container
+ * is also told flex-end, for a theme that sets it to something else. Four classes, so a theme's
+ * `.hp-listing__actions > *` sizing (full-width buttons on a Listing page) does not reach it.
+ */
+.hpsw-post .hp-listing__actions.hpsw-post__actions {
+	justify-content: flex-end;
+}
+
+.hpsw-post .hp-listing__actions.hpsw-post__actions > .hpsw-post__counts {
+	display: inline-flex;
+	flex: 0 0 auto;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem 1rem;
+	width: auto;
+	margin: 0 0 0 auto;
+}
+
+/*
+ * Each icon sits a short, even gap before its number, on the number's baseline. Before this the
+ * like heart had 1rem (the reset's gap plus core's `.hp-link i:first-child{margin-right:.5rem}`,
+ * common.min.css) and the comment icon 0.5rem, and on the account Wall list the pairs were only a
+ * space apart (measured 26 Sept 2026: 3.8px icon to number, 3.9px between the pairs). The gap
+ * is in em so it follows the text size; the icon's own margin is taken off so the gap is the only
+ * spacing. The screen-reader label is absolutely positioned, so it takes no part in the gap.
+ */
+.hpsw-post .hpsw-post__like,
+.hpsw-post .hpsw-post__comments,
+.hpsw-post .hpsw-post__engagement > span {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.4em;
+}
+
+.hpsw-post .hpsw-post__like .hp-icon,
+.hpsw-post .hpsw-post__comments .hp-icon,
+.hpsw-post .hpsw-post__engagement > span > .hp-icon {
+	margin: 0;
+}
+
+/* The account Wall list prints the two pairs as spans in one table cell with a space between them,
+   so the gap there is a margin rather than the flex gap the cards use: 0.75rem plus that space
+   measures about 1rem, level with the cards. */
+.hpsw-post .hpsw-post__engagement > span + span {
+	margin-left: 0.75rem;
+}
+
+.hpsw-post .hpsw-post__like.is-liked .hp-icon {
+	color: #ff5a5f;
+}
+
+.hpsw-post .hpsw-post__like[aria-busy="true"] {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+.hpsw-post .hpsw-post__actions a {
+	text-decoration: none;
+}
+
+/* ---------------------------------------------------------------------
+ * The filter form above the all-Vendors wall: stacked on a phone, one row from 48em (core's
+ * grid breakpoint), wrapping when a site has every filter.
+ * ------------------------------------------------------------------- */
+.hpsw-wall .hpsw-filter {
+	margin-bottom: 2rem;
+}
+
+@media (min-width: 48em) {
+	.hpsw-wall .hpsw-filter {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: flex-end;
+		gap: 1rem;
+	}
+
+	.hpsw-wall .hpsw-filter .hp-form__fields {
+		display: flex;
+		flex: 1 1 30rem;
+		flex-wrap: wrap;
+		gap: 1rem;
+		margin-bottom: 0;
+	}
+
+	.hpsw-wall .hpsw-filter .hp-form__field {
+		flex: 1 1 10rem;
+		min-width: 0;
+		margin-bottom: 0;
+	}
+
+	/*
+	 * Level with the fields. The fields' own bottom margins are taken off above, and the themes give
+	 * the footer and the button a top margin of their own for a stacked form (measured: the Filter
+	 * button sat 1.9rem below the fields on ListingHive and ExpertHive), so both are cleared here.
+	 */
+	.hpsw-wall .hpsw-filter .hp-form__footer {
+		flex: 0 0 auto;
+		margin: 0;
+		padding: 0;
+	}
+
+	.hpsw-wall .hpsw-filter .hp-form__footer .hp-form__button {
+		margin: 0;
+	}
+}
+
+.hpsw-wall__empty {
+	margin: 0 0 2rem;
+}
+
+/* ---------------------------------------------------------------------
+ * The Vendor's Wall page in their account.
+ * ------------------------------------------------------------------- */
+.hpsw-manage__header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem 1rem;
+	margin-bottom: 2rem;
+}
+
+.hpsw-manage__header p {
+	margin: 0;
+}
+
+/*
+ * The New post link keeps its white label on hover and focus. HiveTheme (all six official themes,
+ * vendor/hivepress/hivetheme/assets/css/frontend.min.css) ships a bare a:hover{color:#1db1fc} at
+ * (0,1,1), which beats its own .button--primary{color:#fff} at (0,1,0), so a link styled as a
+ * button turned its label blue on hover (reported and measured 26 Sept 2026).
+ */
+a.hpsw-manage__new.button--primary:hover,
+a.hpsw-manage__new.button--primary:focus {
+	color: #fff;
+}
+
+.hpsw-manage .hpsw-post__actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 1rem;
+}
+
+.hpsw-manage .hpsw-post__engagement span {
+	white-space: nowrap;
+}
+
+.hpsw-post__manage {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	margin-top: 2rem;
+}
+
+/* ---------------------------------------------------------------------
+ * A post page's sidebar: the owner's box and the Share button.
+ *
+ * The box copies Additional Gallery's Manage Photo card (its assets/css/frontend.css, "Manage Photo
+ * card"): the theme's own sidebar widget card, the main action full width, then each smaller action
+ * centred in its own ruled-off section with a line of explanation under it.
+ * ------------------------------------------------------------------- */
+.hpsw-post-manage,
+.hpsw-share__block {
+	margin-bottom: 1.875rem;
+}
+
+.hpsw-post-manage .hpsw-post-manage__state {
+	margin: 0 0 0.5rem;
+}
+
+.hpsw-post-manage__section {
+	margin-top: 1.5rem;
+	padding-top: 1rem;
+	border-top: 1px solid rgba(0, 0, 0, 0.1);
+	font-size: 87.5%;
+	text-align: center;
+}
+
+.hpsw-post-manage .hpsw-post-manage__action {
+	justify-content: center;
+	gap: 0.375rem;
+}
+
+.hpsw-post-manage .hpsw-post-manage__action .hp-icon {
+	margin: 0;
+}
+
+.hpsw-post-manage__section .hp-meta {
+	margin: 0.375rem 0 0;
+}
+
+/*
+ * The Edit Post link keeps its white label on hover and focus. HiveTheme (all six official themes)
+ * ships a bare a:hover{color:#1db1fc} at (0,1,1), which beats its own .button--primary{color:#fff} at
+ * (0,1,0), so a link styled as a button turns its label blue on hover (resources/hivepress-ui.md,
+ * "A link styled as a button turns the theme's link colour on hover").
+ */
+a.hpsw-post-manage__edit.button--primary:hover,
+a.hpsw-post-manage__edit.button--primary:focus {
+	color: #fff;
+}
+
+/* ---------------------------------------------------------------------
+ * The Share pop-up. The markup and data attributes are shared with Additional Gallery's photo page
+ * (see Hpsw_Wall::render_share()); these rules are this plugin's own and use its own class names.
+ * Options run the full width of the pop-up, then the QR code on a white ground in every colour
+ * scheme, since a phone camera cannot read light modules on a dark page.
+ * ------------------------------------------------------------------- */
+.hpsw-share .hpsw-share__options {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+	margin-bottom: 1.5rem;
+}
+
+.hpsw-share .hpsw-share__option {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	box-sizing: border-box;
+	width: 100%;
+	margin: 0;
+	padding: 0.75rem 1rem;
+	border: 1px solid rgba(0, 0, 0, 0.12);
+	border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+	border-radius: 0.25rem;
+	background: none;
+	box-shadow: none;
+	color: inherit;
+	font: inherit;
+	line-height: 1.4;
+	text-align: left;
+	text-decoration: none;
+	text-transform: none;
+	letter-spacing: normal;
+	cursor: pointer;
+}
+
+/* Restated at (0,2,1) so HiveTheme's a:hover{color:#1db1fc} and the themes' button:hover rules cannot
+   recolour a row. */
+.hpsw-share a.hpsw-share__option:hover,
+.hpsw-share a.hpsw-share__option:focus,
+.hpsw-share button.hpsw-share__option:hover,
+.hpsw-share button.hpsw-share__option:focus {
+	border-color: rgba(0, 0, 0, 0.3);
+	border-color: color-mix(in srgb, currentColor 40%, transparent);
+	background: none;
+	box-shadow: none;
+	color: inherit;
+}
+
+.hpsw-share .hpsw-share__icon {
+	flex: 0 0 auto;
+	width: 1.25rem;
+	height: 1.25rem;
+	margin: 0;
+	font-size: 1.125rem;
+	line-height: 1.25rem;
+	text-align: center;
+}
+
+.hpsw-share .hpsw-share__icon--facebook {
+	color: #1877f2;
+}
+
+.hpsw-share .hpsw-share__icon--whatsapp {
+	color: #25d366;
+}
+
+.hpsw-share .hpsw-share__copied {
+	margin: 0;
+	font-weight: 600;
+	text-align: center;
+}
+
+.hpsw-share .hpsw-share__copied[hidden],
+.hpsw-share .hpsw-share__qr[hidden] {
+	display: none;
+}
+
+.hpsw-share .hpsw-share__qr {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	width: max-content;
+	min-width: 13.5rem;
+	max-width: 100%;
+	min-height: 13.5rem;
+	margin: 0 auto;
+	padding: 0.5rem;
+	border-radius: 0.25rem;
+	background: #fff;
+}
+
+.hpsw-share .hpsw-share__qr canvas {
+	display: block;
+	width: 12.5rem;
+	max-width: 100%;
+	height: auto;
+}
+
+.hpsw-share .hpsw-share__hint {
+	margin: 0.75rem 0 0;
+	text-align: center;
+}
+
+/* ---------------------------------------------------------------------
+ * Comments on a post's own page.
+ * ------------------------------------------------------------------- */
+.hpsw-comments {
+	margin-top: 2rem;
+}
+
+.hpsw-comments__list,
+.hpsw-comments__replies {
+	margin: 0 0 2rem;
+	padding: 0;
+	list-style: none;
+}
+
+.hpsw-comments__list > li,
+.hpsw-comments__replies > li {
+	margin: 0;
+	padding: 0;
+}
+
+.hpsw-comments__replies {
+	margin: 1rem 0 0 2.5rem;
+}
+
+.hpsw-comment {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.8rem;
+	margin-bottom: 1rem;
+}
+
+.hpsw-comment__avatar {
+	flex: 0 0 auto;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 50%;
+}
+
+.hpsw-comment__body {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow-wrap: anywhere;
+}
+
+.hpsw-comment__header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.25rem 0.5rem;
+}
+
+.hpsw-comment__text {
+	margin: 0.25rem 0;
+}
+
+.hpsw-comment__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	font-size: 80%;
+}
+
+/*
+ * Post Comment sits at the right-hand end of the composer, under the box it submits, at every width,
+ * the way Additional Gallery's photo page lays out its own comment form (its frontend.css, "Post
+ * Comment belongs at the right-hand end of the composer": flex-end, 0.75rem above). The reply
+ * "cancel" link, when shown, sits to the left of the button.
+ */
+.hpsw-comments .hp-form__footer {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 1rem;
+	margin-top: 0.75rem;
+}
+
+.hpsw-comments .hp-form__footer .hpsw-comments__cancel {
+	order: -1;
+}
+
+/* The comment box is followed by a hidden reply field, so the theme's gap after "not the last field"
+   landed under it and the button sat 38px below the box, against Additional Gallery's 18px. */
+.hpsw-comments .hp-form__fields,
+.hpsw-comments .hp-form__field--textarea {
+	margin-bottom: 0;
+}
+
+.hpsw-comments .hp-form__footer .hp-form__button {
+	margin: 0;
+}
+
+/* Sized to its label from 48em; on a phone it runs the full width, as Additional Gallery's does (its
+   width comes from the theme there, measured 326px of a 326px form at 390px, ListingHive). */
+@media (min-width: 48em) {
+	.hpsw-comments .hp-form__footer .hp-form__button {
+		width: auto;
+	}
+}
+
+@media (max-width: 47.99em) {
+	.hpsw-comments .hp-form__footer .hp-form__button {
+		width: 100%;
+	}
+}
+
+@media (max-width: 47.99em) {
+	.hpsw-comments__replies {
+		margin-left: 1rem;
+	}
+}
+
+/* Space above the Share button too, for a theme whose Vendor card has no bottom margin at phone width
+   (TaskHive measured 0px, 26 Sept 2026). Vertical margins collapse, so elsewhere nothing changes. */
+.hpsw-share__block {
+	margin-top: 1.875rem;
+}
