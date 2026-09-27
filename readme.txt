@@ -4,7 +4,7 @@ Tags: hivepress, vendors, deals, coupons, wall
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -84,6 +84,9 @@ It is kept, so reinstalling brings everything back. To remove it all, tick "Dele
 * The Facebook and WhatsApp icons in the Share pop-up are from Font Awesome Free 7.1.0 by Fonticons, Inc., licensed under CC BY 4.0 (https://fontawesome.com/license/free).
 
 == Changelog ==
+
+= 1.0.6 =
+* Fixed: the Wall page in a Vendor's account now shows two cards per row on wide screens as intended (1.0.5 still laid them out three across), and the counts keep to the right of the end date. A post's status now shows only when it needs attention (pending, pinned or ended), at the start of the buttons row.
 
 = 1.0.5 =
 * Changed: the Wall page in a Vendor's account shows two cards per row, so each card has room to breathe beside the account menu.

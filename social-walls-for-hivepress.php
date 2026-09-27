@@ -3,7 +3,7 @@
  * Plugin Name: Social Walls for HivePress
  * Plugin URI: https://github.com/irapidchris-del/social-walls-for-hivepress
  * Description: Gives every Vendor a wall for deals and updates, shows it on their profile, and adds an all-Vendors wall block with filters, likes and comments.
- * Version: 1.0.5
+ * Version: 1.0.6
  * Author: ChrisB @ HivePress Community
  * Author URI: https://community.hivepress.io/u/chrisb/summary
  * Text Domain: social-walls-for-hivepress
@@ -22,7 +22,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // Keep in step with the Version header above and the readme Stable tag on every release.
-define( 'HPSW_VERSION', '1.0.5' );
+define( 'HPSW_VERSION', '1.0.6' );
 
 // The main file, for asset paths and URLs that must not depend on the installed folder name.
 define( 'HPSW_FILE', __FILE__ );

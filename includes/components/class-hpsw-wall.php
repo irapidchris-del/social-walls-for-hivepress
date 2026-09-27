@@ -2413,14 +2413,14 @@ final class Hpsw_Wall extends Component {
 	 * three from 64em, core's `sm` and `md` breakpoints (hivepress/assets/css/grid.min.css).
 	 *
 	 * @param int[] $post_ids Post IDs.
-	 * @param int   $columns Columns on wide screens; ignored in the owner view.
+	 * @param int   $columns Columns on wide screens; the owner view always uses two.
 	 * @param bool  $owner_view Whether the cards are drawn for their owner.
 	 * @return string
 	 */
 	public function render_posts( $post_ids, $columns = 1, $owner_view = false ) {
 		$engagement = $this->get_engagement( $post_ids );
 		$width      = hp\get_column_width( max( 1, min( 3, absint( $columns ) ) ) );
-		$item_class = $owner_view ? 'hp-col-md-4 hp-col-sm-6 hp-col-xs-12' : 'hp-col-sm-' . $width . ' hp-col-xs-12';
+		$item_class = $owner_view ? 'hp-col-sm-6 hp-col-xs-12' : 'hp-col-sm-' . $width . ' hp-col-xs-12';
 
 		$output  = '<div class="hp-listings hpsw-posts hp-block hp-grid' . ( $owner_view ? ' hpsw-posts--owner' : '' ) . '">';
 		$output .= '<div class="hp-row">';

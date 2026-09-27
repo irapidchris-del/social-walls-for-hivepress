@@ -5,8 +5,9 @@
  *
  * Prints nothing unless the wall drew the card for its owner (the `hpsw_owner_view` context, set
  * only by the account Wall page, which lists the viewer's own posts), so public walls never show it.
- * Its status pill joins the footer's first row, beside the end date; Edit, Pin, View and Delete form
- * a row of small buttons under it. Since 1.0.4 it replaces the
+ * Edit, Pin, View and Delete form a row of small buttons under the footer's end date and counts,
+ * led by a status pill when the post is not simply live (pending, pinned, ended). Since 1.0.4 it
+ * replaces the
  * table row the page printed before, and offers everything that row did, plus Delete behind the
  * same confirmation pop-up as the post's edit page.
  *
@@ -30,9 +31,11 @@ $hpsw_modal   = 'hpsw_post_delete_modal_' . $hpsw_id;
 $hpsw_can_pin = $hpsw_wall->get_pin_product_id() && 'publish' === $hpsw_status && ! $hpsw_post->is_expired();
 ?>
 <div class="hpsw-post__owner">
-	<span class="hpsw-post__status hp-status hp-status--<?php echo esc_attr( $hpsw_pill[0] ); ?>"><span><?php echo esc_html( $hpsw_pill[1] ); ?></span></span>
-
 	<div class="hpsw-post__owner-actions">
+		<?php if ( 'publish' !== $hpsw_pill[0] || $hpsw_post->is_pinned() ) : ?>
+			<span class="hpsw-post__status hp-status hp-status--<?php echo esc_attr( $hpsw_pill[0] ); ?>"><span><?php echo esc_html( $hpsw_pill[1] ); ?></span></span>
+		<?php endif; ?>
+
 		<a href="<?php echo esc_url( hivepress()->router->get_url( 'hpsw_post_edit_page', [ 'hpsw_post_id' => $hpsw_id ] ) ); ?>" class="hpsw-post__edit hpsw-post__owner-button hp-link"><i class="hp-icon fas fa-edit"></i><span><?php esc_html_e( 'Edit', 'social-walls-for-hivepress' ); ?></span></a>
 
 		<?php if ( $hpsw_can_pin ) : ?>

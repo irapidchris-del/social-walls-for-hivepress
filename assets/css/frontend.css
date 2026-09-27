@@ -657,9 +657,9 @@ a.hpsw-manage__new.button--primary:focus {
 
 /*
  * The owner's controls on each card (hpsw-post-owner.php). The owner block steps out of the layout so
- * its parts join the footer: the status pill sits beside the end date with the counts on the right,
- * and Edit, Pin, View and Delete form a row of small outlined buttons underneath, under a thin rule
- * tinted from the text colour so it reads on light and dark cards alike.
+ * its row joins the footer: the end date and the counts stay on the first line, and a status pill (when
+ * the post is not simply live) with Edit, Pin, View and Delete forms a row of small outlined buttons
+ * underneath, under a thin rule tinted from the text colour so it reads on light and dark cards alike.
  */
 .hpsw-post--view-block .hp-listing__footer > .hpsw-post__owner {
 	display: contents;
@@ -671,13 +671,14 @@ a.hpsw-manage__new.button--primary:focus {
 
 .hpsw-post--view-block .hp-listing__footer .hpsw-post__owner .hpsw-post__status {
 	flex: 0 0 auto;
-	order: 2;
-	margin: 0;
+	margin: 0 0.25rem 0 0;
 }
 
-.hpsw-post--view-block .hp-listing__footer > .hpsw-post__actions,
-.hpsw-post--view-block .hp-listing__footer .hpsw-post__actions {
+/* Themes order and stretch `.hp-listing__actions--primary`; the counts keep to the right of the first line. */
+.hpsw-post.hpsw-post--view-block .hp-listing__footer > .hp-listing__actions.hpsw-post__actions {
+	flex: 0 0 auto;
 	order: 3;
+	margin-left: auto;
 }
 
 .hpsw-post--view-block .hp-listing__footer .hpsw-post__owner .hpsw-post__owner-actions {
