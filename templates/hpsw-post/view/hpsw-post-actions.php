@@ -16,6 +16,7 @@
  * @var \HivePress\Models\Hpsw_Post $hpsw_post
  * @var array|null                  $hpsw_engagement
  * @var string|null                 $hpsw_actions_slot
+ * @var bool|null                   $hpsw_owner_view
  */
 
 // Exit if accessed directly.
@@ -53,7 +54,14 @@ $hpsw_liked = ! empty( $hpsw_engagement['liked'] );
 	?>
 	<span class="hpsw-post__counts">
 	<?php if ( $hpsw_likes ) : ?>
-		<?php if ( is_user_logged_in() ) : ?>
+		<?php if ( ! empty( $hpsw_owner_view ) ) : ?>
+			<?php // The owner's own list shows the count only: a pending or hidden post cannot take a like. ?>
+			<span class="hpsw-post__like" title="<?php esc_attr_e( 'Likes', 'social-walls-for-hivepress' ); ?>">
+				<i class="hp-icon fas fa-heart"></i>
+				<span class="hpsw-post__count"><?php echo esc_html( number_format_i18n( absint( $hpsw_engagement['likes'] ) ) ); ?></span>
+				<span class="screen-reader-text"><?php esc_html_e( 'likes', 'social-walls-for-hivepress' ); ?></span>
+			</span>
+		<?php elseif ( is_user_logged_in() ) : ?>
 			<button type="button" class="hpsw-post__like hp-link<?php echo $hpsw_liked ? ' is-liked' : ''; ?>" data-hpsw-like="<?php echo esc_attr( (string) $hpsw_post->get_id() ); ?>" aria-pressed="<?php echo $hpsw_liked ? 'true' : 'false'; ?>" title="<?php echo $hpsw_liked ? esc_attr__( 'Remove your like', 'social-walls-for-hivepress' ) : esc_attr__( 'Like this post', 'social-walls-for-hivepress' ); ?>">
 				<i class="hp-icon fas fa-heart"></i>
 				<span class="hpsw-post__count" data-hpsw-like-count><?php echo esc_html( number_format_i18n( absint( $hpsw_engagement['likes'] ) ) ); ?></span>

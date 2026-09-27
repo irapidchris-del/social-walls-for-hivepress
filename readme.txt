@@ -4,7 +4,7 @@ Tags: hivepress, vendors, deals, coupons, wall
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -84,6 +84,11 @@ It is kept, so reinstalling brings everything back. To remove it all, tick "Dele
 * The Facebook and WhatsApp icons in the Share pop-up are from Font Awesome Free 7.1.0 by Fonticons, Inc., licensed under CC BY 4.0 (https://fontawesome.com/license/free).
 
 == Changelog ==
+
+= 1.0.4 =
+* Fixed: the coupon Copy button now carries its own copy icon, which turns into a tick once the code is copied. On sites whose icon set lacked that icon, an empty gap showed before "Copy".
+* Changed: on wall cards, a Deal's end date now sits on the left of the card's footer, level with the like and comment counts on the right.
+* Changed: the Wall page in a Vendor's account now shows their posts as cards (three per row on wide screens, two on tablets, one on phones), each with its status, Edit, Pin and View, plus a new Delete link.
 
 = 1.0.3 =
 * Gives every Vendor a wall for Deals and Updates. A Deal can carry a coupon code with a copy button, an end date and a linked Listing; both kinds take text and photos.

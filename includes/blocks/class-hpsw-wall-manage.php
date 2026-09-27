@@ -20,10 +20,9 @@ defined( 'ABSPATH' ) || exit;
  * No label, so it is never offered in the block editor: it only makes sense inside the account page
  * that supplies its Vendor.
  *
- * The list is drawn as core's own stacked table (`hp-table hp-table--stack`), the markup core uses
- * for My Listings (blocks/class-listings.php in edit mode, templates/listing/edit/block/*), and the
- * status cell is core's `hp-status` pill, so the page looks like the rest of the account area on
- * every theme.
+ * Since 1.0.4 the posts are the wall's own cards in the wall's grid (one, two or three per row by
+ * screen width), each with a row of the Vendor's controls: status pill, Edit, Pin, View and Delete
+ * (templates/hpsw-post/view/block/hpsw-post-owner.php). Before that they were a stacked table.
  */
 class Hpsw_Wall_Manage extends Block {
 
@@ -123,96 +122,12 @@ class Hpsw_Wall_Manage extends Block {
 			return $output;
 		}
 
-		$engagement = $wall->get_engagement( $posts->get_ids() );
-		$pin_on     = (bool) $wall->get_pin_product_id();
-
-		$output .= '<table class="hpsw-posts hp-block hp-table hp-table--stack">';
-
-		foreach ( $posts as $post ) {
-			if ( ! $post instanceof Models\Hpsw_Post ) {
-				continue;
-			}
-
-			$output .= $this->render_row( $post, isset( $engagement[ $post->get_id() ] ) ? $engagement[ $post->get_id() ] : [], $pin_on );
-		}
-
-		$output .= '</table>';
+		// The same cards as the Social Wall block, in its grid markup, so the site's own styling for
+		// the wall reaches them too; each card carries this Vendor's controls (the owner view).
+		$output .= '<div class="hpsw-wall hpsw-wall--owner">';
+		$output .= $wall->render_posts( array_map( 'absint', $posts->get_ids() ), 3, true );
 		$output .= '</div>';
-
-		return $output;
-	}
-
-	/**
-	 * Renders one row of the Vendor's post list.
-	 *
-	 * @param \HivePress\Models\Hpsw_Post $post Wall post.
-	 * @param array                       $engagement Likes and comments.
-	 * @param bool                        $pin_on Whether paid pinning is available.
-	 * @return string
-	 */
-	protected function render_row( $post, $engagement, $pin_on ) {
-		$wall   = hivepress()->hpsw_wall;
-		$status = (string) $post->get_status();
-		$label  = $wall->get_post_label( $post->get_id() );
-
-		// Status, with the same urgency rule core uses for Listings: the pill says what a reader needs
-		// to know now, not only the raw status (templates/listing/edit/block/listing-status.php).
-		if ( 'pending' === $status ) {
-			$pill = [ 'pending', esc_html_x( 'Pending', 'wall post', 'social-walls-for-hivepress' ) ];
-		} elseif ( $post->is_expired() ) {
-			$pill = [ 'trash', esc_html__( 'Ended', 'social-walls-for-hivepress' ) ];
-		} elseif ( $post->is_pinned() ) {
-			$pill = [
-				'publish',
-				sprintf(
-					/* translators: %s: date. */
-					esc_html__( 'Pinned until %s', 'social-walls-for-hivepress' ),
-					wp_date( get_option( 'date_format' ), (int) $post->get_pinned_time() )
-				),
-			];
-		} elseif ( 'publish' === $status ) {
-			$pill = [ 'publish', esc_html_x( 'Published', 'wall post', 'social-walls-for-hivepress' ) ];
-		} else {
-			$pill = [ 'draft', esc_html_x( 'Hidden', 'wall post', 'social-walls-for-hivepress' ) ];
-		}
-
-		$output  = '<tr class="hpsw-post hpsw-post--edit-block">';
-		$output .= '<td class="hpsw-post__title">';
-		$output .= '<a href="' . esc_url( hivepress()->router->get_url( 'hpsw_post_edit_page', [ 'hpsw_post_id' => $post->get_id() ] ) ) . '" class="hp-link hp-link--wrap"><i class="hp-icon fas fa-edit"></i><span>' . esc_html( $label ) . '</span></a>';
-		$output .= '</td>';
-
-		$output .= '<td class="hpsw-post__type hp-meta">' . ( $post->is_deal() ? esc_html__( 'Deal', 'social-walls-for-hivepress' ) : esc_html__( 'Update', 'social-walls-for-hivepress' ) ) . '</td>';
-
-		$output .= '<td class="hpsw-post__date hp-meta">' . esc_html( date_i18n( get_option( 'date_format' ), strtotime( (string) $post->get_created_date() ) ) ) . '</td>';
-
-		$output .= '<td class="hpsw-post__engagement hp-meta">';
-
-		if ( $wall->are_likes_enabled() ) {
-			$output .= '<span title="' . esc_attr__( 'Likes', 'social-walls-for-hivepress' ) . '"><i class="hp-icon fas fa-heart"></i> ' . esc_html( number_format_i18n( absint( hp\get_array_value( $engagement, 'likes', 0 ) ) ) ) . '</span> ';
-		}
-
-		if ( $wall->are_comments_enabled() ) {
-			$output .= '<span title="' . esc_attr__( 'Comments', 'social-walls-for-hivepress' ) . '"><i class="hp-icon fas fa-comment"></i> ' . esc_html( number_format_i18n( absint( hp\get_array_value( $engagement, 'comments', 0 ) ) ) ) . '</span>';
-		}
-
-		$output .= '</td>';
-
-		$output .= '<td class="hpsw-post__status hp-status hp-status--' . esc_attr( $pill[0] ) . '"><span>' . esc_html( $pill[1] ) . '</span></td>';
-
-		$output .= '<td class="hpsw-post__actions hp-listing__actions hp-listing__actions--primary">';
-
-		if ( $pin_on && 'publish' === $status && ! $post->is_expired() ) {
-			$pin_url = wp_nonce_url( hivepress()->router->get_url( 'hpsw_post_pin_page', [ 'hpsw_post_id' => $post->get_id() ] ), 'hpsw_pin_' . $post->get_id() );
-
-			$output .= '<a href="' . esc_url( $pin_url ) . '" class="hp-link hpsw-post__pin"><i class="hp-icon fas fa-thumbtack"></i><span>' . ( $post->is_pinned() ? esc_html__( 'Extend pin', 'social-walls-for-hivepress' ) : esc_html__( 'Pin to the top', 'social-walls-for-hivepress' ) ) . '</span></a>';
-		}
-
-		if ( 'publish' === $status ) {
-			$output .= '<a href="' . esc_url( $wall->get_post_url( $post ) ) . '" class="hp-link" title="' . esc_attr__( 'View', 'social-walls-for-hivepress' ) . '"><i class="hp-icon fas fa-external-link-alt"></i><span class="screen-reader-text">' . esc_html__( 'View', 'social-walls-for-hivepress' ) . '</span></a>';
-		}
-
-		$output .= '</td>';
-		$output .= '</tr>';
+		$output .= '</div>';
 
 		return $output;
 	}

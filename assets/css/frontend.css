@@ -259,6 +259,7 @@
  */
 .hpsw-post .hpsw-post__coupon {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
 	gap: 0.5rem;
 	box-sizing: border-box;
@@ -274,8 +275,11 @@
 	margin: 0;
 }
 
+/* At least about six letters wide before the Copy button wraps under it (it keeps to the right
+   through its auto margin): on a card about 230px wide, as three per row on the account Wall
+   page, the code was squeezed to three letters a line (measured 27 Sept 2026). */
 .hpsw-post .hpsw-post__coupon-code {
-	flex: 1 1 auto;
+	flex: 1 1 6em;
 	min-width: 0;
 	padding: 0;
 	background: none;
@@ -309,12 +313,34 @@
 	white-space: nowrap;
 }
 
-/* ExpertHive, JobHive, MeetingHive and RentalHive size a button's icon at 24px, which made the small
-   button 36px tall against ListingHive's 28px; the icon follows the label here. */
-.hpsw-post .hpsw-post__coupon button.hpsw-post__coupon-copy .hp-icon {
+/*
+ * The button's icon is the plugin's own inline SVG (hpsw-post-deal.php), about 14px at the button's
+ * 80% text, drawn in the label's colour so it follows the theme and dark mode. A site whose icon
+ * font has no `fa-copy` glyph showed an empty gap here before 1.0.4. The tick replaces it while the
+ * label reads "Copied" (frontend.js adds `is-copied`). Stroke and fill are restated on the path so a
+ * theme's `svg path { fill: ... }` rule cannot fill the outline in.
+ */
+.hpsw-post .hpsw-post__coupon button.hpsw-post__coupon-copy .hpsw-post__copy-icon {
+	display: block;
+	flex: 0 0 auto;
+	width: 1.1em;
+	height: 1.1em;
 	margin: 0;
-	font-size: 1em;
-	line-height: 1;
+	overflow: visible;
+}
+
+.hpsw-post .hpsw-post__coupon button.hpsw-post__coupon-copy .hpsw-post__copy-icon path {
+	fill: none;
+	stroke: currentColor;
+}
+
+.hpsw-post .hpsw-post__coupon button.hpsw-post__coupon-copy .hpsw-post__copy-icon--done,
+.hpsw-post .hpsw-post__coupon button.hpsw-post__coupon-copy.is-copied .hpsw-post__copy-icon--copy {
+	display: none;
+}
+
+.hpsw-post .hpsw-post__coupon button.hpsw-post__coupon-copy.is-copied .hpsw-post__copy-icon--done {
+	display: block;
 }
 
 .hpsw-post .hpsw-post__coupon button.hpsw-post__coupon-copy:focus-visible {
@@ -346,6 +372,20 @@
 	font-size: 65%;
 }
 
+/* A pill never runs past its card: on a narrow card the words wrap inside it. "Ended on 24 September
+   2026" was wider than a 228px card and spilled over its edge (measured 27 Sept 2026). */
+.hpsw-post .hpsw-post__ends.hp-status,
+.hpsw-post .hpsw-post__owner .hpsw-post__status {
+	max-width: 100%;
+}
+
+.hpsw-post .hpsw-post__ends.hp-status > span,
+.hpsw-post .hpsw-post__owner .hpsw-post__status > span {
+	max-width: 100%;
+	box-sizing: border-box;
+	white-space: normal;
+}
+
 /* The icon follows the pill's text size: at the themes' own icon size it made the pill 31px tall
    (ListingHive) and 39px (ExpertHive) against the 26px Deal badge beside the name. */
 .hpsw-post .hpsw-post__ends.hp-status .hp-icon {
@@ -359,14 +399,29 @@
 	opacity: 0.75;
 }
 
-/* The counts sit together on the right of the card's footer. */
-.hpsw-post--view-block .hp-listing__footer .hpsw-post__actions {
-	margin-left: auto;
+/*
+ * The card's footer: one row with a Deal's end date on the left and the like and comment counts
+ * together on the right, vertically centred (since 1.0.4; the date sat in the card body before).
+ * On a card too narrow for both, the counts wrap to a line of their own and keep to the right,
+ * because their auto left margin takes the spare width. On the account Wall page the owner's row
+ * follows as a full-width line of its own.
+ */
+.hpsw-post--view-block .hp-listing__footer {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.5rem 1rem;
 }
 
-.hpsw-post--view-block .hp-listing__footer {
-	flex-wrap: wrap;
-	gap: 0.5rem 1rem;
+.hpsw-post--view-block .hp-listing__footer > .hpsw-post__ends {
+	flex: 0 1 auto;
+	min-width: 0;
+	margin: 0;
+}
+
+.hpsw-post--view-block .hp-listing__footer .hpsw-post__actions {
+	margin-left: auto;
 }
 
 /*
@@ -377,9 +432,9 @@
  * date's column took about 200px from the post's text and photo (measured 26 Sept 2026, ExpertHive,
  * two-column wall: text column 276px against 504px on ListingHive). So a wall card keeps the stacked
  * shape these themes already use below 48em, with the footer as a row under the content, and the
- * divider, padding and margins copied from each theme's own below-48em footer rule. Since 1.0.3 the
- * end date is a pill in the Deal box and the footer holds only the counts, but the stacked shape
- * stays: the wall's text and photo read better across the full card than beside a side column.
+ * divider, padding and margins copied from each theme's own below-48em footer rule. The footer holds
+ * the end date pill and the counts (and on the account Wall page the owner's row), and the wall's
+ * text and photo read better across the full card than beside a side column.
  */
 @media (min-width: 48em) {
 	.hp-theme--experthive .hpsw-post--view-block,
@@ -495,30 +550,20 @@
 /*
  * Each icon sits a short, even gap before its number, on the number's baseline. Before this the
  * like heart had 1rem (the reset's gap plus core's `.hp-link i:first-child{margin-right:.5rem}`,
- * common.min.css) and the comment icon 0.5rem, and on the account Wall list the pairs were only a
- * space apart (measured 26 Sept 2026: 3.8px icon to number, 3.9px between the pairs). The gap
+ * common.min.css) and the comment icon 0.5rem (measured 26 Sept 2026). The gap
  * is in em so it follows the text size; the icon's own margin is taken off so the gap is the only
  * spacing. The screen-reader label is absolutely positioned, so it takes no part in the gap.
  */
 .hpsw-post .hpsw-post__like,
-.hpsw-post .hpsw-post__comments,
-.hpsw-post .hpsw-post__engagement > span {
+.hpsw-post .hpsw-post__comments {
 	display: inline-flex;
 	align-items: baseline;
 	gap: 0.4em;
 }
 
 .hpsw-post .hpsw-post__like .hp-icon,
-.hpsw-post .hpsw-post__comments .hp-icon,
-.hpsw-post .hpsw-post__engagement > span > .hp-icon {
+.hpsw-post .hpsw-post__comments .hp-icon {
 	margin: 0;
-}
-
-/* The account Wall list prints the two pairs as spans in one table cell with a space between them,
-   so the gap there is a margin rather than the flex gap the cards use: 0.75rem plus that space
-   measures about 1rem, level with the cards. */
-.hpsw-post .hpsw-post__engagement > span + span {
-	margin-left: 0.75rem;
 }
 
 .hpsw-post .hpsw-post__like.is-liked .hp-icon {
@@ -610,15 +655,53 @@ a.hpsw-manage__new.button--primary:focus {
 	color: #fff;
 }
 
-.hpsw-manage .hpsw-post__actions {
+/*
+ * The owner's row on each card (hpsw-post-owner.php): the status pill on the left, the controls on
+ * the right, as a full-width line at the foot of the card's footer, under a thin rule. The rule is a
+ * tint of the text colour, so it reads on a light card and on a dark one alike. On a narrow card the
+ * controls wrap under the pill and keep to the right.
+ */
+.hpsw-post--view-block .hp-listing__footer > .hpsw-post__owner {
 	display: flex;
+	flex: 1 0 100%;
 	flex-wrap: wrap;
-	justify-content: flex-end;
-	gap: 1rem;
+	align-items: center;
+	gap: 0.5rem 1rem;
+	box-sizing: border-box;
+	min-width: 0;
+	margin: 0.25rem 0 0;
+	padding: 0.75rem 0 0;
+	border-top: 1px solid rgba(128, 128, 128, 0.25);
+	border-top-color: color-mix(in srgb, currentColor 15%, transparent);
 }
 
-.hpsw-manage .hpsw-post__engagement span {
+.hpsw-post .hpsw-post__owner .hpsw-post__status {
+	flex: 0 0 auto;
+	margin: 0;
+}
+
+.hpsw-post .hpsw-post__owner .hpsw-post__owner-actions {
+	display: flex;
+	flex: 0 1 auto;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	align-items: center;
+	gap: 0.5rem 1rem;
+	margin-left: auto;
+}
+
+/* Icon and label a short, even gap apart; core's `.hp-link i:first-child` margin is taken off so
+   the gap is the only spacing, as on the counts. */
+.hpsw-post .hpsw-post__owner-actions .hp-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
 	white-space: nowrap;
+	text-decoration: none;
+}
+
+.hpsw-post .hpsw-post__owner-actions .hp-link .hp-icon {
+	margin: 0;
 }
 
 .hpsw-post__manage {

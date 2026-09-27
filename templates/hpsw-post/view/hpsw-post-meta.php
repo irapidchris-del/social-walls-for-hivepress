@@ -25,7 +25,16 @@ if ( ! $hpsw_image ) {
 	$hpsw_image = hivepress()->asset->get_image_url( get_option( 'hp_vendor_placeholder_image' ), 'hp_square_small', hivepress()->get_url() . '/assets/images/placeholders/user-square.svg' );
 }
 
-$hpsw_time = strtotime( (string) $hpsw_post->get_created_date_gmt() . ' UTC' );
+// WordPress leaves the GMT date of a pending or hidden post at 0000-00-00 until it is published, which
+// printed "November 30, -0001" on those cards in the account Wall page. Their local date is real, so
+// it is converted instead.
+$hpsw_gmt = (string) $hpsw_post->get_created_date_gmt();
+
+if ( '' === $hpsw_gmt || 0 === strpos( $hpsw_gmt, '0000' ) ) {
+	$hpsw_gmt = get_gmt_from_date( (string) $hpsw_post->get_created_date() );
+}
+
+$hpsw_time = strtotime( $hpsw_gmt . ' UTC' );
 ?>
 <div class="hpsw-post__byline">
 	<a href="<?php echo esc_url( $hpsw_vendor_url ); ?>" class="hpsw-post__avatar">

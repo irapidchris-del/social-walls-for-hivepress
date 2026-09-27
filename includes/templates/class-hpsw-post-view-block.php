@@ -78,9 +78,8 @@ class Hpsw_Post_View_Block extends Template {
 										'_order' => 35,
 									],
 
-									// The coupon row, then the end date pill and the linked Listing. Since
-									// 1.0.3 the end date is a pill here rather than in the footer, which holds
-									// only the like and comment counts.
+									// The coupon row and the linked Listing. On a card the end date is left
+									// out of this part and printed in the footer instead (since 1.0.4).
 									'hpsw_post_deal'  => [
 										'type'   => 'part',
 										'path'   => 'hpsw-post/view/hpsw-post-deal',
@@ -98,11 +97,27 @@ class Hpsw_Post_View_Block extends Template {
 									'class' => [ 'hp-listing__footer' ],
 								],
 
+								// One row: a Deal's end date on the left, the like and comment counts
+								// together on the right. It wraps on a narrow card, with the counts
+								// keeping to the right (frontend.css, "The card's footer").
 								'blocks'     => [
+									'hpsw_post_ends'    => [
+										'type'   => 'part',
+										'path'   => 'hpsw-post/view/hpsw-post-ends',
+										'_order' => 5,
+									],
+
 									'hpsw_post_actions' => [
 										'type'   => 'part',
 										'path'   => 'hpsw-post/view/hpsw-post-actions',
 										'_order' => 10,
+									],
+
+									// The owner's status and controls, on the account Wall page only.
+									'hpsw_post_owner'   => [
+										'type'   => 'part',
+										'path'   => 'hpsw-post/view/block/hpsw-post-owner',
+										'_order' => 20,
 									],
 								],
 							],

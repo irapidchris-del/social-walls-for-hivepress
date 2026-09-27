@@ -110,7 +110,7 @@
 	 * Coupon codes.
 	 *
 	 * The copying itself is core's `copy` component on the code element; this only confirms it. The
-	 * Copy button's label reads "Copied" for two seconds, and the row's status region (a
+	 * Copy button's label reads "Copied", with a tick for its icon, for two seconds, and the row's status region (a
 	 * screen-reader-only role="status" span) says the same, because a changed button label is not
 	 * announced on its own. The button clicks the code, so both routes copy the same way.
 	 * ------------------------------------------------------------------ */
@@ -140,12 +140,23 @@
 			label.setAttribute( 'data-hpsw-label', label.textContent );
 		}
 
+		// The button's copy icon turns into a tick for as long as the label reads "Copied".
+		var button = coupon.querySelector( '[data-hpsw-copy-button]' );
+
 		label.textContent = text;
+
+		if ( button ) {
+			button.classList.add( 'is-copied' );
+		}
 
 		window.clearTimeout( label.hpswTimer );
 
 		label.hpswTimer = window.setTimeout( function () {
 			label.textContent = label.getAttribute( 'data-hpsw-label' );
+
+			if ( button ) {
+				button.classList.remove( 'is-copied' );
+			}
 
 			if ( status ) {
 				status.textContent = '';

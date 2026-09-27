@@ -1760,6 +1760,44 @@ final class Hpsw_Wall extends Component {
 	}
 
 	/**
+	 * Gets the status pill a post shows its owner: the `hp-status` modifier and the label.
+	 *
+	 * The same urgency rule core uses for Listings: the pill says what a reader needs to know now,
+	 * not only the raw status (templates/listing/edit/block/listing-status.php).
+	 *
+	 * @param \HivePress\Models\Hpsw_Post $post Wall post.
+	 * @return string[] Modifier and label.
+	 */
+	public function get_owner_status( $post ) {
+		$status = (string) $post->get_status();
+
+		if ( 'pending' === $status ) {
+			return [ 'pending', esc_html_x( 'Pending', 'wall post', 'social-walls-for-hivepress' ) ];
+		}
+
+		if ( $post->is_expired() ) {
+			return [ 'trash', esc_html__( 'Ended', 'social-walls-for-hivepress' ) ];
+		}
+
+		if ( $post->is_pinned() ) {
+			return [
+				'publish',
+				sprintf(
+					/* translators: %s: date. */
+					esc_html__( 'Pinned until %s', 'social-walls-for-hivepress' ),
+					wp_date( get_option( 'date_format' ), (int) $post->get_pinned_time() )
+				),
+			];
+		}
+
+		if ( 'publish' === $status ) {
+			return [ 'publish', esc_html_x( 'Published', 'wall post', 'social-walls-for-hivepress' ) ];
+		}
+
+		return [ 'draft', esc_html_x( 'Hidden', 'wall post', 'social-walls-for-hivepress' ) ];
+	}
+
+	/**
 	 * Gets a short plain-text label for a post, for emails, carts and admin screens.
 	 *
 	 * @param int $post_id Post ID.
@@ -2369,26 +2407,34 @@ final class Hpsw_Wall extends Component {
 	 * renders `listing_view_block` (blocks/class-listings.php), so themes can restyle the card and
 	 * an owner can override any part from their theme's `hivepress/hpsw-post/` folder.
 	 *
+	 * The owner view (the account Wall page) shows every post the caller passes, whatever its status,
+	 * so the caller must pass only posts the viewer owns; each card then carries the owner's controls
+	 * (the `hpsw-post-owner` part), and the grid steps from one column on a phone to two from 48em and
+	 * three from 64em, core's `sm` and `md` breakpoints (hivepress/assets/css/grid.min.css).
+	 *
 	 * @param int[] $post_ids Post IDs.
-	 * @param int   $columns Columns on wide screens.
+	 * @param int   $columns Columns on wide screens; ignored in the owner view.
+	 * @param bool  $owner_view Whether the cards are drawn for their owner.
 	 * @return string
 	 */
-	public function render_posts( $post_ids, $columns = 1 ) {
+	public function render_posts( $post_ids, $columns = 1, $owner_view = false ) {
 		$engagement = $this->get_engagement( $post_ids );
 		$width      = hp\get_column_width( max( 1, min( 3, absint( $columns ) ) ) );
+		$item_class = $owner_view ? 'hp-col-md-4 hp-col-sm-6 hp-col-xs-12' : 'hp-col-sm-' . $width . ' hp-col-xs-12';
 
-		$output  = '<div class="hp-listings hpsw-posts hp-block hp-grid">';
+		$output  = '<div class="hp-listings hpsw-posts hp-block hp-grid' . ( $owner_view ? ' hpsw-posts--owner' : '' ) . '">';
 		$output .= '<div class="hp-row">';
 
 		foreach ( $post_ids as $post_id ) {
 			$post = Models\Hpsw_Post::query()->get_by_id( $post_id );
 
-			if ( ! $this->is_post_visible( $post ) ) {
+			if ( $owner_view ? ! $post instanceof Models\Hpsw_Post : ! $this->is_post_visible( $post ) ) {
 				continue;
 			}
 
-			$output .= '<div class="hp-grid__item hp-col-sm-' . esc_attr( (string) $width ) . ' hp-col-xs-12">';
+			$output .= '<div class="hp-grid__item ' . esc_attr( $item_class ) . '">';
 
+			// `hpsw_card` keeps the end date out of the Deal box, since the card's footer shows it.
 			$output .= ( new Blocks\Template(
 				[
 					'template' => 'hpsw_post_view_block',
@@ -2396,6 +2442,8 @@ final class Hpsw_Wall extends Component {
 					'context'  => [
 						'hpsw_post'       => $post,
 						'hpsw_engagement' => isset( $engagement[ $post_id ] ) ? $engagement[ $post_id ] : [],
+						'hpsw_card'       => true,
+						'hpsw_owner_view' => (bool) $owner_view,
 					],
 				]
 			) )->render();

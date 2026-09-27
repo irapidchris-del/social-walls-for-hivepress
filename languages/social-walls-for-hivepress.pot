@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Social Walls for HivePress 1.0.3\n"
+"Project-Id-Version: Social Walls for HivePress 1.0.4\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/social-walls-for-hivepress\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-26T21:19:52+00:00\n"
+"POT-Creation-Date: 2026-09-27T16:14:26+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: social-walls-for-hivepress\n"
@@ -29,7 +29,7 @@ msgstr[1] ""
 
 #. translators: %s: time since, for example "3 hours".
 #: includes/blocks/class-hpsw-post-comments.php:147
-#: templates/hpsw-post/view/hpsw-post-meta.php:42
+#: templates/hpsw-post/view/hpsw-post-meta.php:51
 #, php-format
 msgid "%s ago"
 msgstr ""
@@ -56,7 +56,7 @@ msgid "Manage Post"
 msgstr ""
 
 #: includes/blocks/class-hpsw-post-manage.php:74
-#: includes/blocks/class-hpsw-wall-manage.php:161
+#: includes/components/class-hpsw-wall.php:1775
 #: includes/models/class-hpsw-post.php:150
 msgctxt "wall post"
 msgid "Pending"
@@ -74,18 +74,18 @@ msgstr ""
 
 #. translators: %s: date.
 #: includes/blocks/class-hpsw-post-manage.php:88
-#: includes/blocks/class-hpsw-wall-manage.php:169
+#: includes/components/class-hpsw-wall.php:1787
 #, php-format
 msgid "Pinned until %s"
 msgstr ""
 
 #: includes/blocks/class-hpsw-post-manage.php:99
-#: includes/blocks/class-hpsw-wall-manage.php:207
+#: templates/hpsw-post/view/block/hpsw-post-owner.php:38
 msgid "Extend pin"
 msgstr ""
 
 #: includes/blocks/class-hpsw-post-manage.php:99
-#: includes/blocks/class-hpsw-wall-manage.php:207
+#: templates/hpsw-post/view/block/hpsw-post-owner.php:38
 msgid "Pin to the top"
 msgstr ""
 
@@ -112,84 +112,33 @@ msgstr ""
 #: includes/blocks/class-hpsw-post-manage.php:131
 #: includes/forms/class-hpsw-post-delete.php:52
 #: includes/templates/class-hpsw-post-edit-page.php:64
+#: templates/hpsw-post/view/block/hpsw-post-owner.php:54
 msgid "Delete Post"
 msgstr ""
 
-#: includes/blocks/class-hpsw-wall-manage.php:67
+#: includes/blocks/class-hpsw-wall-manage.php:66
 msgid "Your current plan does not include wall posts."
 msgstr ""
 
-#: includes/blocks/class-hpsw-wall-manage.php:72
-#: includes/blocks/class-hpsw-wall-manage.php:85
+#: includes/blocks/class-hpsw-wall-manage.php:71
+#: includes/blocks/class-hpsw-wall-manage.php:84
 msgid "See the plans"
 msgstr ""
 
-#: includes/blocks/class-hpsw-wall-manage.php:90
+#: includes/blocks/class-hpsw-wall-manage.php:89
 msgid "New post"
 msgstr ""
 
 #. translators: 1: posts used, 2: posts allowed.
-#: includes/blocks/class-hpsw-wall-manage.php:98
+#: includes/blocks/class-hpsw-wall-manage.php:97
 #, php-format
 msgid "You have used %1$s of your %2$s post this month."
 msgid_plural "You have used %1$s of your %2$s posts this month."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/blocks/class-hpsw-wall-manage.php:120
+#: includes/blocks/class-hpsw-wall-manage.php:119
 msgid "You have not posted anything yet. Deals and Updates you post appear on your profile and on the site's wall."
-msgstr ""
-
-#: includes/blocks/class-hpsw-wall-manage.php:163
-#: includes/components/class-hpsw-wall-admin.php:238
-msgid "Ended"
-msgstr ""
-
-#: includes/blocks/class-hpsw-wall-manage.php:174
-#: includes/models/class-hpsw-post.php:147
-msgctxt "wall post"
-msgid "Published"
-msgstr ""
-
-#: includes/blocks/class-hpsw-wall-manage.php:176
-#: includes/models/class-hpsw-post.php:149
-msgctxt "wall post"
-msgid "Hidden"
-msgstr ""
-
-#: includes/blocks/class-hpsw-wall-manage.php:184
-#: includes/components/class-hpsw-wall-admin.php:199
-#: includes/components/class-hpsw-wall.php:1241
-#: includes/configs/meta-boxes.php:67
-#: includes/controllers/class-hpsw-wall.php:739
-#: includes/models/class-hpsw-post.php:82
-#: templates/hpsw-post/view/hpsw-post-meta.php:54
-msgid "Deal"
-msgstr ""
-
-#: includes/blocks/class-hpsw-wall-manage.php:184
-#: includes/components/class-hpsw-wall-admin.php:199
-#: includes/components/class-hpsw-wall.php:1241
-#: includes/configs/meta-boxes.php:66
-#: includes/controllers/class-hpsw-wall.php:739
-#: includes/models/class-hpsw-post.php:81
-#: templates/hpsw-post/view/hpsw-post-meta.php:56
-msgid "Update"
-msgstr ""
-
-#: includes/blocks/class-hpsw-wall-manage.php:191
-#: includes/configs/settings.php:152
-msgid "Likes"
-msgstr ""
-
-#: includes/blocks/class-hpsw-wall-manage.php:195
-#: includes/templates/class-hpsw-post-view-page.php:86
-#: templates/hpsw-post/view/hpsw-post-actions.php:72
-msgid "Comments"
-msgstr ""
-
-#: includes/blocks/class-hpsw-wall-manage.php:211
-msgid "View"
 msgstr ""
 
 #: includes/blocks/class-hpsw-wall.php:73
@@ -263,6 +212,24 @@ msgstr ""
 msgid "Likes and Comments"
 msgstr ""
 
+#: includes/components/class-hpsw-wall-admin.php:199
+#: includes/components/class-hpsw-wall.php:1241
+#: includes/configs/meta-boxes.php:67
+#: includes/controllers/class-hpsw-wall.php:739
+#: includes/models/class-hpsw-post.php:82
+#: templates/hpsw-post/view/hpsw-post-meta.php:63
+msgid "Deal"
+msgstr ""
+
+#: includes/components/class-hpsw-wall-admin.php:199
+#: includes/components/class-hpsw-wall.php:1241
+#: includes/configs/meta-boxes.php:66
+#: includes/controllers/class-hpsw-wall.php:739
+#: includes/models/class-hpsw-post.php:81
+#: templates/hpsw-post/view/hpsw-post-meta.php:65
+msgid "Update"
+msgstr ""
+
 #. translators: 1: number of likes, 2: number of comments.
 #: includes/components/class-hpsw-wall-admin.php:209
 #, php-format
@@ -270,8 +237,13 @@ msgid "%1$s likes, %2$s comments"
 msgstr ""
 
 #: includes/components/class-hpsw-wall-admin.php:232
-#: templates/hpsw-post/view/hpsw-post-meta.php:51
+#: templates/hpsw-post/view/hpsw-post-meta.php:60
 msgid "Pinned"
+msgstr ""
+
+#: includes/components/class-hpsw-wall-admin.php:238
+#: includes/components/class-hpsw-wall.php:1779
+msgid "Ended"
 msgstr ""
 
 #. translators: 1: number of posts, 2: date.
@@ -378,39 +350,51 @@ msgstr ""
 msgid "Scan with a phone camera to open this page."
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:2441
+#: includes/components/class-hpsw-wall.php:1794
+#: includes/models/class-hpsw-post.php:147
+msgctxt "wall post"
+msgid "Published"
+msgstr ""
+
+#: includes/components/class-hpsw-wall.php:1797
+#: includes/models/class-hpsw-post.php:149
+msgctxt "wall post"
+msgid "Hidden"
+msgstr ""
+
+#: includes/components/class-hpsw-wall.php:2489
 msgid "Previous page"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:2442
+#: includes/components/class-hpsw-wall.php:2490
 msgid "Next page"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:2451
+#: includes/components/class-hpsw-wall.php:2499
 msgid "Wall posts"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:2452
+#: includes/components/class-hpsw-wall.php:2500
 msgid "Wall posts navigation"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:2532
+#: includes/components/class-hpsw-wall.php:2580
 msgid "Copied"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:2533
+#: includes/components/class-hpsw-wall.php:2581
 msgid "My location"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:2534
+#: includes/components/class-hpsw-wall.php:2582
 msgid "Your like could not be saved. Please try again."
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:2535
+#: includes/components/class-hpsw-wall.php:2583
 msgid "Delete this comment? Its replies go with it."
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:2536
+#: includes/components/class-hpsw-wall.php:2584
 msgid "The comment could not be deleted."
 msgstr ""
 
@@ -640,6 +624,11 @@ msgstr ""
 
 #: includes/configs/settings.php:147
 msgid "Nobody"
+msgstr ""
+
+#: includes/configs/settings.php:152
+#: templates/hpsw-post/view/hpsw-post-actions.php:59
+msgid "Likes"
 msgstr ""
 
 #: includes/configs/settings.php:153
@@ -1004,6 +993,11 @@ msgstr ""
 msgid "Text"
 msgstr ""
 
+#: includes/templates/class-hpsw-post-view-page.php:86
+#: templates/hpsw-post/view/hpsw-post-actions.php:80
+msgid "Comments"
+msgstr ""
+
 #: includes/updater.php:685
 msgid "See the GitHub releases page for the changelog."
 msgstr ""
@@ -1075,56 +1069,65 @@ msgstr ""
 msgid "View Post"
 msgstr ""
 
+#: templates/hpsw-post/view/block/hpsw-post-owner.php:35
+msgid "Edit"
+msgstr ""
+
+#: templates/hpsw-post/view/block/hpsw-post-owner.php:42
+msgid "View"
+msgstr ""
+
 #: templates/hpsw-post/view/block/hpsw-post-text.php:22
 msgid "Read more"
 msgstr ""
 
-#: templates/hpsw-post/view/hpsw-post-actions.php:57
-msgid "Remove your like"
-msgstr ""
-
-#: templates/hpsw-post/view/hpsw-post-actions.php:57
-msgid "Like this post"
-msgstr ""
-
-#: templates/hpsw-post/view/hpsw-post-actions.php:60
-#: templates/hpsw-post/view/hpsw-post-actions.php:66
+#: templates/hpsw-post/view/hpsw-post-actions.php:62
+#: templates/hpsw-post/view/hpsw-post-actions.php:68
+#: templates/hpsw-post/view/hpsw-post-actions.php:74
 msgid "likes"
 msgstr ""
 
-#: templates/hpsw-post/view/hpsw-post-actions.php:63
+#: templates/hpsw-post/view/hpsw-post-actions.php:65
+msgid "Remove your like"
+msgstr ""
+
+#: templates/hpsw-post/view/hpsw-post-actions.php:65
+msgid "Like this post"
+msgstr ""
+
+#: templates/hpsw-post/view/hpsw-post-actions.php:71
 msgid "Sign in to like this post"
 msgstr ""
 
-#: templates/hpsw-post/view/hpsw-post-actions.php:75
+#: templates/hpsw-post/view/hpsw-post-actions.php:83
 msgid "comments"
 msgstr ""
 
-#: templates/hpsw-post/view/hpsw-post-deal.php:53
+#: templates/hpsw-post/view/hpsw-post-deal.php:68
 msgid "Code"
 msgstr ""
 
-#: templates/hpsw-post/view/hpsw-post-deal.php:54
-#: templates/hpsw-post/view/hpsw-post-deal.php:55
+#: templates/hpsw-post/view/hpsw-post-deal.php:69
+#: templates/hpsw-post/view/hpsw-post-deal.php:70
 msgid "Copy the code"
 msgstr ""
 
-#: templates/hpsw-post/view/hpsw-post-deal.php:55
+#: templates/hpsw-post/view/hpsw-post-deal.php:73
 msgid "Copy"
 msgstr ""
 
 #. translators: %s: date.
-#: templates/hpsw-post/view/hpsw-post-deal.php:70
+#: templates/hpsw-post/view/hpsw-post-ends.php:41
 #, php-format
 msgid "Ended on %s"
 msgstr ""
 
 #. translators: %s: date.
-#: templates/hpsw-post/view/hpsw-post-deal.php:70
+#: templates/hpsw-post/view/hpsw-post-ends.php:41
 #, php-format
 msgid "Ends on %s"
 msgstr ""
 
-#: templates/hpsw-post/view/hpsw-post-meta.php:54
+#: templates/hpsw-post/view/hpsw-post-meta.php:63
 msgid "Deal ended"
 msgstr ""
