@@ -657,9 +657,10 @@ a.hpsw-manage__new.button--primary:focus {
 
 /*
  * The owner's controls on each card (hpsw-post-owner.php). The owner block steps out of the layout so
- * its row joins the footer: the end date and the counts stay on the first line, and a status pill (when
- * the post is not simply live) with Edit, Pin, View and Delete forms a row of small outlined buttons
- * underneath, under a thin rule tinted from the text colour so it reads on light and dark cards alike.
+ * its row joins the footer: the end date and the counts stay on the first line, and underneath, under a
+ * thin rule tinted from the text colour so it reads on light and dark cards alike, a status pill (when
+ * the post is not simply live) on a line of its own, then Edit, Pin, View and Delete sharing the full
+ * width of the card equally.
  */
 .hpsw-post--view-block .hp-listing__footer > .hpsw-post__owner {
 	display: contents;
@@ -670,8 +671,8 @@ a.hpsw-manage__new.button--primary:focus {
 }
 
 .hpsw-post--view-block .hp-listing__footer .hpsw-post__owner .hpsw-post__status {
-	flex: 0 0 auto;
-	margin: 0 0.25rem 0 0;
+	flex: 0 0 100%;
+	margin: 0;
 }
 
 /* Themes order and stretch `.hp-listing__actions--primary`; the counts keep to the right of the first line. */
@@ -697,14 +698,20 @@ a.hpsw-manage__new.button--primary:focus {
 }
 
 /* Sized like the coupon's Copy button. The colour is restated on hover and focus so a theme's
-   `a:hover` colour cannot recolour the label. */
+   `a:hover` colour cannot recolour the label. Each button takes an equal share of the row from a zero
+   basis; the max-content floor is what lets a card too narrow for all four wrap the last ones onto a
+   second line (which they then share equally) instead of squeezing the labels past their edges. */
 .hpsw-post .hpsw-post__owner-actions a.hpsw-post__owner-button,
 .hpsw-post .hpsw-post__owner-actions a.hpsw-post__owner-button:hover,
 .hpsw-post .hpsw-post__owner-actions a.hpsw-post__owner-button:focus {
 	display: inline-flex;
+	flex: 1 1 0;
 	align-items: center;
+	justify-content: center;
 	gap: 0.4em;
-	padding: 0.375rem 0.75rem;
+	box-sizing: border-box;
+	min-width: max-content;
+	padding: 0.375rem 1rem;
 	border: 1px solid rgba(128, 128, 128, 0.35);
 	border-color: color-mix(in srgb, currentColor 22%, transparent);
 	border-radius: 999px;

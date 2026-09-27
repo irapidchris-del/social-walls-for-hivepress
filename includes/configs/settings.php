@@ -128,6 +128,38 @@ return [
 				],
 			],
 
+			'ended'         => [
+				'title'       => esc_html__( 'Ended Deals', 'social-walls-for-hivepress' ),
+				'description' => esc_html__( 'A Deal has ended once its end date has passed, or once the coupon it shows stops working at checkout: the coupon\'s own expiry date has passed, it has been used as many times as it allows, or it has been deleted or moved to the Bin. A Deal whose end date has passed already leaves the walls by itself. Choose here what else happens to ended Deals. Updates are never affected.', 'social-walls-for-hivepress' ),
+				'_order'      => 25,
+
+				'fields'      => [
+					'hpsw_ended_deals' => [
+						'label'       => esc_html__( 'Ended Deals', 'social-walls-for-hivepress' ),
+						'description' => esc_html__( 'Keep leaves every ended Deal in place, marked as Ended, with its coupon code hidden. Its own page still opens, and a Deal whose coupon stopped working stays on the walls. Hide takes ended Deals off every wall and profile straight away, and their pages stop opening for visitors; the Vendor still sees them, marked as Ended, on the Wall page in their account. Move to the Bin hides them the same way, then moves them to the Bin once a day, which also removes them from the Vendor\'s Wall page. An administrator can restore a binned post under Vendors, Wall Posts, Bin, until WordPress empties the Bin by itself (after 30 days, unless your site is set up differently).', 'social-walls-for-hivepress' ),
+						'type'        => 'radio',
+						'default'     => 'keep',
+						'_order'      => 10,
+
+						'options'     => [
+							'keep'  => esc_html__( 'Keep and show as Ended', 'social-walls-for-hivepress' ),
+							'hide'  => esc_html__( 'Hide from walls', 'social-walls-for-hivepress' ),
+							'trash' => esc_html__( 'Move to the Bin', 'social-walls-for-hivepress' ),
+						],
+					],
+
+					'hpsw_ended_grace' => [
+						'label'       => esc_html__( 'Grace Period (days)', 'social-walls-for-hivepress' ),
+						'description' => esc_html__( 'How many days an ended Deal stays as it is before it is hidden or moved to the Bin. Leave it at 0 to act as soon as a Deal ends. When a coupon is used up, the days count from when the plugin first notices, which can be up to a day later. Has no effect while ended Deals are kept.', 'social-walls-for-hivepress' ),
+						'type'        => 'number',
+						'min_value'   => 0,
+						'max_value'   => 365,
+						'default'     => 0,
+						'_order'      => 20,
+					],
+				],
+			],
+
 			'engagement'    => [
 				'title'       => esc_html__( 'Comments and Likes', 'social-walls-for-hivepress' ),
 				'description' => esc_html__( 'Signed-in visitors can like a post with the heart, and comment on it from the post\'s own page. Vendors are emailed about new comments on their posts, and commenters about replies. Comments can be unapproved or deleted under Comments in this dashboard.', 'social-walls-for-hivepress' ),

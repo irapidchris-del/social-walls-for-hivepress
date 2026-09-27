@@ -60,7 +60,7 @@ $hpsw_time = strtotime( $hpsw_gmt . ' UTC' );
 			<span class="hpsw-post__pinned hp-status hp-status--pending"><span><i class="hp-icon fas fa-thumbtack"></i> <?php esc_html_e( 'Pinned', 'social-walls-for-hivepress' ); ?></span></span>
 		<?php endif; ?>
 		<?php if ( $hpsw_post->is_deal() ) : ?>
-			<span class="hpsw-post__type hp-status hp-status--<?php echo esc_attr( $hpsw_post->is_expired() ? 'trash' : 'publish' ); ?>"><span><?php echo $hpsw_post->is_expired() ? esc_html__( 'Deal ended', 'social-walls-for-hivepress' ) : esc_html__( 'Deal', 'social-walls-for-hivepress' ); ?></span></span>
+			<span class="hpsw-post__type hp-status hp-status--<?php echo esc_attr( $hpsw_post->is_ended() ? 'trash' : 'publish' ); ?>"><span><?php echo $hpsw_post->is_ended() ? esc_html__( 'Deal ended', 'social-walls-for-hivepress' ) : esc_html__( 'Deal', 'social-walls-for-hivepress' ); ?></span></span>
 		<?php else : ?>
 			<span class="hpsw-post__type hp-status"><span><?php esc_html_e( 'Update', 'social-walls-for-hivepress' ); ?></span></span>
 		<?php endif; ?>

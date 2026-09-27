@@ -34,6 +34,7 @@ defined( 'ABSPATH' ) || exit;
  * @method string|null get_text()
  * @method string|null get_type()
  * @method string|null get_coupon()
+ * @method int|null get_coupon_id()
  * @method string|null get_expire_date()
  * @method int|null get_listing__id()
  * @method int|null get_pinned()
@@ -108,6 +109,14 @@ class Hpsw_Post extends Post {
 						'type'       => 'text',
 						'max_length' => 64,
 						'_external'  => true,
+					],
+
+					// The WooCommerce coupon the code was picked from, when it was picked rather than typed, so
+					// the Deal can tell a deleted coupon from a code that never had one.
+					'coupon_id'        => [
+						'type'      => 'number',
+						'min_value' => 0,
+						'_external' => true,
 					],
 
 					'expire_date'      => [
@@ -278,5 +287,17 @@ class Hpsw_Post extends Post {
 		$date = (string) $this->get_expire_date();
 
 		return '' !== $date && $date < current_time( 'Y-m-d' );
+	}
+
+	/**
+	 * Checks whether a Deal is over: its end date has passed, or the coupon it shows no longer works.
+	 *
+	 * The coupon half is answered by the component from one batched lookup per page, never a query
+	 * per card (Hpsw_Wall::get_ended_time()). Updates only ever end by date, as before.
+	 *
+	 * @return bool
+	 */
+	final public function is_ended() {
+		return $this->is_expired() || ( $this->is_deal() && null !== hivepress()->hpsw_wall->get_ended_time( (int) $this->id ) );
 	}
 }

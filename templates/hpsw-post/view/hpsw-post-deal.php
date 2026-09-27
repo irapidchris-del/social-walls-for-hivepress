@@ -44,7 +44,8 @@ if ( ! $hpsw_listing instanceof \HivePress\Models\Listing || 'publish' !== $hpsw
 	$hpsw_listing = null;
 }
 
-$hpsw_show = '' !== $hpsw_coupon && ! $hpsw_post->is_expired();
+// An ended Deal's code is hidden, whether its date passed or its coupon stopped working.
+$hpsw_show = '' !== $hpsw_coupon && ! $hpsw_post->is_ended();
 
 // The end date pill, rendered through its own part so a theme can replace it in one place.
 $hpsw_ends = '';

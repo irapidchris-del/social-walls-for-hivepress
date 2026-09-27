@@ -3,7 +3,7 @@
  * Plugin Name: Social Walls for HivePress
  * Plugin URI: https://github.com/irapidchris-del/social-walls-for-hivepress
  * Description: Gives every Vendor a wall for deals and updates, shows it on their profile, and adds an all-Vendors wall block with filters, likes and comments.
- * Version: 1.0.6
+ * Version: 1.1.0
  * Author: ChrisB @ HivePress Community
  * Author URI: https://community.hivepress.io/u/chrisb/summary
  * Text Domain: social-walls-for-hivepress
@@ -22,7 +22,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // Keep in step with the Version header above and the readme Stable tag on every release.
-define( 'HPSW_VERSION', '1.0.6' );
+define( 'HPSW_VERSION', '1.1.0' );
 
 // The main file, for asset paths and URLs that must not depend on the installed folder name.
 define( 'HPSW_FILE', __FILE__ );
@@ -55,12 +55,29 @@ function hpsw_activate() {
 	add_option( 'hp_hpsw_show_radius', '1' );
 
 	delete_option( 'rewrite_rules' );
+
+	hpsw_schedule_ended_deals();
 }
 
 register_activation_hook( __FILE__, 'hpsw_activate' );
 
 /**
- * Drops the cached rewrite rules on deactivation so the wall addresses disappear.
+ * Schedules the daily pass over ended Deals, unless it is already scheduled.
+ *
+ * A plain function rather than a component method: on the activation request HivePress has not
+ * loaded this plugin's classes, because the extension was registered before it was active.
+ *
+ * @return void
+ */
+function hpsw_schedule_ended_deals() {
+	if ( ! wp_next_scheduled( 'hpsw_tidy_ended_deals' ) ) {
+		wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', 'hpsw_tidy_ended_deals' );
+	}
+}
+
+/**
+ * Drops the cached rewrite rules on deactivation so the wall addresses disappear, and stops the daily
+ * pass over ended Deals.
  *
  * Not `flush_rewrite_rules()`: on the deactivation request this plugin's routes are still
  * registered, so a flush would write the dead rules straight back.
@@ -69,6 +86,9 @@ register_activation_hook( __FILE__, 'hpsw_activate' );
  */
 function hpsw_deactivate() {
 	delete_option( 'rewrite_rules' );
+
+	// Every run of the daily pass, including a follow-up run queued with a batch offset.
+	wp_unschedule_hook( 'hpsw_tidy_ended_deals' );
 }
 
 register_deactivation_hook( __FILE__, 'hpsw_deactivate' );

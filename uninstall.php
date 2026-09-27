@@ -65,6 +65,9 @@ function hpsw_uninstall_site() {
 
 	wp_clear_scheduled_hook( 'social_walls_for_hivepress_release_refresh' );
 
+	// The daily pass over ended Deals, including any follow-up run queued with a batch offset.
+	wp_unschedule_hook( 'hpsw_tidy_ended_deals' );
+
 	// The stored version keys the rewrite flush on init; left behind, a reinstall of the same
 	// version would never flush and every wall page would answer 404.
 	delete_option( 'hp_hpsw_version' );

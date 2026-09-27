@@ -216,6 +216,31 @@ final class Hpsw_Wall_Admin extends Component {
 	}
 
 	/**
+	 * Checks whether a Deal in the admin list ended because of its coupon.
+	 *
+	 * The first row asks for every post on the screen at once, so the list costs two queries in all
+	 * rather than two per row.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return bool
+	 */
+	protected function is_coupon_ended( $post_id ) {
+		global $wp_query;
+
+		$wall = hivepress()->hpsw_wall;
+
+		if ( ! $wall ) {
+			return false;
+		}
+
+		if ( $wp_query instanceof \WP_Query && is_array( $wp_query->posts ) ) {
+			$wall->load_ended_times( wp_list_pluck( $wp_query->posts, 'ID' ) );
+		}
+
+		return null !== $wall->get_ended_time( $post_id );
+	}
+
+	/**
 	 * Marks pinned posts and ended Deals in the list, the way core marks Featured Listings
 	 * (components/class-listing.php:580-596).
 	 *
@@ -234,7 +259,8 @@ final class Hpsw_Wall_Admin extends Component {
 
 		$end = (string) get_post_meta( $post->ID, 'hp_expire_date', true );
 
-		if ( '' !== $end && $end < current_time( 'Y-m-d' ) ) {
+		// The coupon half of the test is batched for the whole screen on its first row.
+		if ( ( '' !== $end && $end < current_time( 'Y-m-d' ) ) || $this->is_coupon_ended( $post->ID ) ) {
 			$states['hpsw_ended'] = esc_html__( 'Ended', 'social-walls-for-hivepress' );
 		}
 

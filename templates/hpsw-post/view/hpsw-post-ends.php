@@ -29,19 +29,25 @@ if ( ! $hpsw_end_date ) {
 	return;
 }
 
-$hpsw_ended = $hpsw_post->is_expired();
+// A Deal whose coupon stopped working before its date says only "Ended", since the date is not when it did.
+$hpsw_expired = $hpsw_post->is_expired();
+$hpsw_ended   = $hpsw_expired || $hpsw_post->is_ended();
 ?>
 <span class="hpsw-post__ends hp-status<?php echo $hpsw_ended ? ' hpsw-post__ends--ended' : ''; ?>">
 	<span>
 		<i class="hp-icon fas fa-hourglass-half" aria-hidden="true"></i>
 		<?php
-		echo esc_html(
-			sprintf(
-				/* translators: %s: date. */
-				$hpsw_ended ? esc_html__( 'Ended on %s', 'social-walls-for-hivepress' ) : esc_html__( 'Ends on %s', 'social-walls-for-hivepress' ),
-				wp_date( get_option( 'date_format' ), $hpsw_end_date->setTime( 12, 0 )->getTimestamp() )
-			)
-		);
+		if ( $hpsw_ended && ! $hpsw_expired ) {
+			esc_html_e( 'Ended', 'social-walls-for-hivepress' );
+		} else {
+			echo esc_html(
+				sprintf(
+					/* translators: %s: date. */
+					$hpsw_ended ? esc_html__( 'Ended on %s', 'social-walls-for-hivepress' ) : esc_html__( 'Ends on %s', 'social-walls-for-hivepress' ),
+					wp_date( get_option( 'date_format' ), $hpsw_end_date->setTime( 12, 0 )->getTimestamp() )
+				)
+			);
+		}
 		?>
 	</span>
 </span>

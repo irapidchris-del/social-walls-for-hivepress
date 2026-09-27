@@ -221,7 +221,8 @@ final class Hpsw_Wall extends Controller {
 			}
 
 			if ( is_array( $coupon ) ) {
-				$values['coupon'] = $coupon['code'];
+				$values['coupon']    = $coupon['code'];
+				$values['coupon_id'] = $coupon['id'];
 
 				// The Deal ends when its coupon does, unless the Vendor chose an earlier day themselves.
 				if ( '' !== $coupon['expires'] && ! hp\get_array_value( $values, 'expire_date' ) ) {
@@ -232,13 +233,26 @@ final class Hpsw_Wall extends Controller {
 
 		unset( $values['hpsw_coupon_id'] );
 
+		// A code typed by hand has no known coupon behind it, unless it is the one already stored.
+		if ( array_key_exists( 'coupon', $values ) && ! array_key_exists( 'coupon_id', $values ) && 0 !== strcasecmp( trim( (string) $values['coupon'] ), trim( (string) $post->get_coupon() ) ) ) {
+			$values['coupon_id'] = null;
+		}
+
 		// The Deal-only details mean nothing on an Update, and a stale end date would even make an
 		// Update vanish from the walls, so they are cleared rather than kept out of sight.
 		if ( 'deal' !== hp\get_array_value( $values, 'type' ) ) {
 			$values['coupon']      = null;
+			$values['coupon_id']   = null;
 			$values['expire_date'] = null;
 			$values['listing']     = null;
 		}
+
+		// A new coupon or end date starts the Deal afresh, so a recorded end no longer applies; the
+		// daily pass records it again if the Deal is still over.
+		// Only values the request actually carries count: the picker's "keep" sends no code at all.
+		$restarted = ( array_key_exists( 'coupon', $values ) && trim( (string) $values['coupon'] ) !== trim( (string) $post->get_coupon() ) )
+			|| ( array_key_exists( 'coupon_id', $values ) && absint( $values['coupon_id'] ) !== absint( $post->get_coupon_id() ) )
+			|| ( array_key_exists( 'expire_date', $values ) && (string) $values['expire_date'] !== (string) $post->get_expire_date() );
 
 		$post->fill( $values );
 
@@ -264,6 +278,10 @@ final class Hpsw_Wall extends Controller {
 
 		if ( ! $post->save() ) {
 			return hp\rest_error( 400, $post->_get_errors() );
+		}
+
+		if ( $restarted ) {
+			delete_post_meta( $post->get_id(), 'hp_hpsw_ended_time' );
 		}
 
 		return hp\rest_response(
@@ -726,7 +744,12 @@ final class Hpsw_Wall extends Controller {
 		$post  = Models\Hpsw_Post::query()->get_by_id( absint( hivepress()->request->get_param( 'hpsw_post_id' ) ) );
 		$title = null;
 
-		if ( $post instanceof Models\Hpsw_Post && ( hivepress()->hpsw_wall->is_post_visible( $post ) || ( 'pending' === $post->get_status() && hivepress()->hpsw_wall->can_manage_post( $post ) ) ) ) {
+		// Its Vendor and administrators still open a post waiting for approval, and an ended Deal hidden
+		// from visitors, which the Vendor's Wall page links to.
+		$wall    = hivepress()->hpsw_wall;
+		$managed = $post instanceof Models\Hpsw_Post && $wall->can_manage_post( $post ) && ( 'pending' === $post->get_status() || ( 'publish' === $post->get_status() && $wall->is_ended_hidden( $post ) ) );
+
+		if ( $post instanceof Models\Hpsw_Post && ( $wall->is_post_visible( $post ) || $managed ) ) {
 			hivepress()->request->set_context( 'hpsw_post', $post );
 
 			$title  = trim( (string) $post->get_title() );

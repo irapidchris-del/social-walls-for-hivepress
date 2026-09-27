@@ -78,7 +78,7 @@ class Hpsw_Post_Manage extends Block {
 		}
 
 		// Pinning, when it is on sale and the post can be pinned.
-		if ( $wall->get_pin_product_id() && 'publish' === $status && ! $post->is_expired() ) {
+		if ( $wall->get_pin_product_id() && 'publish' === $status && ! $post->is_ended() ) {
 			$output .= '<div class="hpsw-post-manage__section hpsw-post-manage__pin">';
 
 			if ( $post->is_pinned() ) {

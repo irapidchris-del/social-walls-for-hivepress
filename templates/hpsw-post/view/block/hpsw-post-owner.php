@@ -28,7 +28,7 @@ $hpsw_id      = $hpsw_post->get_id();
 $hpsw_status  = (string) $hpsw_post->get_status();
 $hpsw_pill    = $hpsw_wall->get_owner_status( $hpsw_post );
 $hpsw_modal   = 'hpsw_post_delete_modal_' . $hpsw_id;
-$hpsw_can_pin = $hpsw_wall->get_pin_product_id() && 'publish' === $hpsw_status && ! $hpsw_post->is_expired();
+$hpsw_can_pin = $hpsw_wall->get_pin_product_id() && 'publish' === $hpsw_status && ! $hpsw_post->is_ended();
 ?>
 <div class="hpsw-post__owner">
 	<div class="hpsw-post__owner-actions">

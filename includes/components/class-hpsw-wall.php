@@ -45,11 +45,35 @@ final class Hpsw_Wall extends Component {
 	const FOLLOWER_BATCH = 50;
 
 	/**
+	 * The daily WP-Cron event that tidies ended Deals, with its batch size and the most one run
+	 * handles before it hands the rest to a follow-up run.
+	 */
+	const ENDED_HOOK = 'hpsw_tidy_ended_deals';
+
+	const ENDED_BATCH = 100;
+
+	const ENDED_LIMIT = 2000;
+
+	/**
 	 * The current user's published Vendor, cached for the request. False once looked up and absent.
 	 *
 	 * @var \HivePress\Models\Vendor|false|null
 	 */
 	protected $current_vendor = null;
+
+	/**
+	 * When each Deal looked at in this request ended, keyed by post ID (see get_ended_time()).
+	 *
+	 * @var array<int, int|null>
+	 */
+	protected $ended_times = [];
+
+	/**
+	 * Published Deals the walls leave out because their coupon ended, once worked out.
+	 *
+	 * @var int[]|null
+	 */
+	protected $hidden_deal_ids = null;
 
 	/**
 	 * Class constructor.
@@ -88,6 +112,10 @@ final class Hpsw_Wall extends Component {
 		add_action( 'hpsw_notify_followers', [ $this, 'notify_followers' ], 10, 2 );
 		add_action( 'hpsw_purge_cache', [ $this, 'purge_cache' ] );
 
+		// Ended Deals: the daily pass, and a record when a coupon a Deal shows is deleted for good.
+		add_action( self::ENDED_HOOK, [ $this, 'tidy_ended_deals' ] );
+		add_action( 'before_delete_post', [ $this, 'record_deleted_coupon' ], 10, 2 );
+
 		// Keep cached pages honest about likes and comments. Raw comment hooks rather than model
 		// events: cache invalidation must never be missed, and model events are skipped during an
 		// import (resources/hivepress-data.md, "Model hooks").
@@ -123,6 +151,9 @@ final class Hpsw_Wall extends Component {
 		// The gating flag is derived state; recompute it whenever the code that reads it may have
 		// changed.
 		$this->refresh_gating_flag();
+
+		// An update copied over the old files never runs the activation hook, which schedules it too.
+		hpsw_schedule_ended_deals();
 
 		update_option( 'hp_hpsw_version', HPSW_VERSION );
 	}
@@ -518,7 +549,7 @@ final class Hpsw_Wall extends Component {
 
 		$vendor = $post->get_vendor();
 
-		return $vendor instanceof Models\Vendor && 'publish' === $vendor->get_status();
+		return $vendor instanceof Models\Vendor && 'publish' === $vendor->get_status() && ! $this->is_ended_hidden( $post );
 	}
 
 	/**
@@ -1587,7 +1618,17 @@ final class Hpsw_Wall extends Component {
 	 * @return string
 	 */
 	protected function get_coupon_expiry( $coupon_id ) {
-		$value = trim( (string) get_post_meta( $coupon_id, 'date_expires', true ) );
+		return $this->format_coupon_expiry( get_post_meta( $coupon_id, 'date_expires', true ) );
+	}
+
+	/**
+	 * Turns a stored coupon `date_expires` value into Y-m-d in the site's timezone.
+	 *
+	 * @param mixed $value Stored value: a Unix time, or a date.
+	 * @return string Y-m-d, or an empty string for none.
+	 */
+	protected function format_coupon_expiry( $value ) {
+		$value = trim( (string) $value );
 
 		if ( '' === $value ) {
 			return '';
@@ -1641,7 +1682,7 @@ final class Hpsw_Wall extends Component {
 	 *
 	 * @param mixed $choice Submitted choice: a coupon ID, "keep" for the code already on the post, or empty.
 	 * @param int   $vendor_id The post's Vendor.
-	 * @return array{code: string|null, expires: string}|\WP_Error|null Null to leave the code as it is.
+	 * @return array{code: string|null, id: int|null, expires: string}|\WP_Error|null Null to leave the code as it is.
 	 */
 	public function resolve_coupon_choice( $choice, $vendor_id ) {
 		if ( 'keep' === $choice ) {
@@ -1651,6 +1692,7 @@ final class Hpsw_Wall extends Component {
 		if ( null === $choice || '' === $choice || 0 === $choice || '0' === $choice ) {
 			return [
 				'code'    => null,
+				'id'      => null,
 				'expires' => '',
 			];
 		}
@@ -1664,8 +1706,559 @@ final class Hpsw_Wall extends Component {
 
 		return [
 			'code'    => $coupons[ $coupon_id ]['code'],
+			'id'      => $coupon_id,
 			'expires' => $coupons[ $coupon_id ]['expires'],
 		];
+	}
+
+	/*
+	|--------------------------------------------------------------------------
+	| Ended Deals
+	|--------------------------------------------------------------------------
+	*/
+
+	/**
+	 * Gets what happens to an ended Deal: keep, hide or trash.
+	 *
+	 * Keep until the owner chooses otherwise, so a site updating from 1.0.x sees no change.
+	 *
+	 * @return string
+	 */
+	public function get_ended_mode() {
+		return hpsw_get_choice_option( 'hpsw_ended_deals', [ 'keep', 'hide', 'trash' ], 'keep' );
+	}
+
+	/**
+	 * Gets the days an ended Deal is left as it is before it is hidden or binned.
+	 *
+	 * @return int
+	 */
+	public function get_ended_grace() {
+		return max( 0, min( 365, hpsw_get_number_option( 'hpsw_ended_grace', 0 ) ) );
+	}
+
+	/**
+	 * Gets when a Deal ended.
+	 *
+	 * @param int $post_id Post ID.
+	 * @return int|null Null while the Deal runs (and always for an Update), 0 when it ended at a moment
+	 *                  not yet recorded, otherwise the Unix time it ended.
+	 */
+	public function get_ended_time( $post_id ) {
+		$post_id = absint( $post_id );
+
+		if ( ! $post_id ) {
+			return null;
+		}
+
+		if ( ! array_key_exists( $post_id, $this->ended_times ) ) {
+			$this->load_ended_times( [ $post_id ] );
+		}
+
+		return $this->ended_times[ $post_id ];
+	}
+
+	/**
+	 * Works out, in two queries, which of the given posts are ended Deals, and remembers the answers
+	 * for the request. Pages call it with every post they are about to draw, so the cards then read
+	 * from memory rather than querying the coupon once per card.
+	 *
+	 * @param int[] $post_ids Post IDs.
+	 * @param bool  $fresh Look again at posts already answered in this request.
+	 * @return void
+	 */
+	public function load_ended_times( $post_ids, $fresh = false ) {
+		$post_ids = array_values( array_unique( array_filter( array_map( 'absint', (array) $post_ids ) ) ) );
+
+		if ( ! $fresh ) {
+			$post_ids = array_values( array_diff( $post_ids, array_keys( $this->ended_times ) ) );
+		}
+
+		if ( ! $post_ids ) {
+			return;
+		}
+
+		$rows = $this->query_deal_rows( 'ids', $post_ids );
+
+		foreach ( $post_ids as $post_id ) {
+			$this->ended_times[ $post_id ] = null;
+		}
+
+		foreach ( $this->resolve_ended_times( $rows ) as $post_id => $time ) {
+			$this->ended_times[ $post_id ] = $time;
+		}
+	}
+
+	/**
+	 * Checks whether an ended Deal is due to leave public view under the owner's setting.
+	 *
+	 * @param int|null $time What get_ended_time() returned.
+	 * @return bool
+	 */
+	protected function is_ended_due( $time ) {
+		if ( null === $time || 'keep' === $this->get_ended_mode() ) {
+			return false;
+		}
+
+		$grace = $this->get_ended_grace();
+
+		if ( ! $grace ) {
+			return true;
+		}
+
+		// An end nobody has timed yet starts its grace period when the daily pass first records it.
+		return $time > 0 && $time + $grace * DAY_IN_SECONDS <= time();
+	}
+
+	/**
+	 * Checks whether a post is an ended Deal that visitors no longer see.
+	 *
+	 * @param \HivePress\Models\Hpsw_Post $post Wall post.
+	 * @return bool
+	 */
+	public function is_ended_hidden( $post ) {
+		if ( ! $post instanceof Models\Hpsw_Post || ! $post->is_deal() || 'keep' === $this->get_ended_mode() ) {
+			return false;
+		}
+
+		return $this->is_ended_due( $this->get_ended_time( (int) $post->get_id() ) );
+	}
+
+	/**
+	 * Gets the published Deals a wall must leave out because their coupon ended.
+	 *
+	 * Deals past their own end date are already left out by the wall query itself, so only live Deals
+	 * with a code are looked at: two queries per request, whatever the size of the wall.
+	 *
+	 * @return int[]
+	 */
+	public function get_hidden_deal_ids() {
+		if ( 'keep' === $this->get_ended_mode() ) {
+			return [];
+		}
+
+		if ( null === $this->hidden_deal_ids ) {
+			$rows = $this->query_deal_rows( 'live', [ current_time( 'Y-m-d' ) ] );
+
+			$this->hidden_deal_ids = [];
+
+			foreach ( $this->resolve_ended_times( $rows ) as $post_id => $time ) {
+				$this->ended_times[ $post_id ] = $time;
+
+				if ( $this->is_ended_due( $time ) ) {
+					$this->hidden_deal_ids[] = $post_id;
+				}
+			}
+		}
+
+		return $this->hidden_deal_ids;
+	}
+
+	/**
+	 * Reads the Deal details the end check needs, for one of four fixed sets of Deals.
+	 *
+	 * One query with a join per meta key, rather than the model, so a whole wall costs one round trip.
+	 * The conditions are fixed here and only ever take values through placeholders.
+	 *
+	 * @param string $scope Which Deals: `ids` (the posts in $args), `live` (published, with a code,
+	 *                      not past their own end date; $args is today), `tidy` (published or hidden,
+	 *                      with a code or past their end date, above an ID; $args is the ID, today and
+	 *                      the batch size) or `code` (showing the code in $args).
+	 * @param array  $args Values for the placeholders.
+	 * @return array<int, array{code: string, coupon_id: int, end_date: string, ended_time: int}> Keyed by post ID.
+	 */
+	protected function query_deal_rows( $scope, $args = [] ) {
+		global $wpdb;
+
+		$args = array_values( $args );
+
+		// Each condition is prepared on its own, then placed in the query below. WordPress swaps any "%"
+		// in a prepared value for a placeholder token until the query runs (wpdb::add_placeholder_escape()),
+		// so preparing the whole query again cannot misread a code that contains one.
+		if ( 'ids' === $scope && $args ) {
+			$where = $wpdb->prepare( 'p.ID IN (' . implode( ',', array_fill( 0, count( $args ), '%d' ) ) . ')', $args );
+		} elseif ( 'live' === $scope ) {
+			$where = $wpdb->prepare( "p.post_status = 'publish' AND c.meta_value <> '' AND ( e.meta_value IS NULL OR e.meta_value = '' OR e.meta_value >= %s )", $args );
+		} elseif ( 'tidy' === $scope && 3 === count( $args ) ) {
+			$where = $wpdb->prepare( "p.post_status IN ( 'publish', 'draft' ) AND p.ID > %d AND ( c.meta_value <> '' OR ( e.meta_value <> '' AND e.meta_value < %s ) ) ORDER BY p.ID ASC LIMIT %d", absint( $args[0] ), (string) $args[1], absint( $args[2] ) );
+		} elseif ( 'code' === $scope ) {
+			$where = $wpdb->prepare( 'c.meta_value = %s', $args );
+		} else {
+			return [];
+		}
+
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- $where is prepared above; a join per meta key is not expressible through WP_Query, and the answer changes as coupons are used, so it is not cached beyond the request.
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT p.ID, c.meta_value AS code, i.meta_value AS coupon_id, e.meta_value AS end_date, s.meta_value AS ended_time
+				FROM {$wpdb->posts} p
+				INNER JOIN {$wpdb->postmeta} t ON t.post_id = p.ID AND t.meta_key = 'hp_type' AND t.meta_value = 'deal'
+				LEFT JOIN {$wpdb->postmeta} c ON c.post_id = p.ID AND c.meta_key = 'hp_coupon'
+				LEFT JOIN {$wpdb->postmeta} i ON i.post_id = p.ID AND i.meta_key = 'hp_coupon_id'
+				LEFT JOIN {$wpdb->postmeta} e ON e.post_id = p.ID AND e.meta_key = 'hp_expire_date'
+				LEFT JOIN {$wpdb->postmeta} s ON s.post_id = p.ID AND s.meta_key = 'hp_hpsw_ended_time'
+				WHERE p.post_type = %s AND {$where}",
+				self::POST_TYPE
+			),
+			ARRAY_A
+		);
+		// phpcs:enable
+
+		$rows = [];
+
+		foreach ( (array) $results as $result ) {
+			$post_id = absint( $result['ID'] );
+
+			if ( isset( $rows[ $post_id ] ) ) {
+				continue;
+			}
+
+			$rows[ $post_id ] = [
+				'code'       => trim( (string) $result['code'] ),
+				'coupon_id'  => absint( $result['coupon_id'] ),
+				'end_date'   => trim( (string) $result['end_date'] ),
+				'ended_time' => absint( $result['ended_time'] ),
+			];
+		}
+
+		return $rows;
+	}
+
+	/**
+	 * Works out when each Deal ended, from its own end date and the coupon it shows.
+	 *
+	 * @param array $rows Deal details from query_deal_rows().
+	 * @return array<int, int|null> Keyed by post ID, as get_ended_time() describes.
+	 */
+	protected function resolve_ended_times( $rows ) {
+		$today   = current_time( 'Y-m-d' );
+		$coupons = $this->query_coupon_rows( $rows );
+		$times   = [];
+
+		foreach ( $rows as $post_id => $row ) {
+			$ends  = [];
+			$ended = false;
+
+			// The Deal's own date is inclusive, like is_expired(): it ends when that day is over.
+			if ( '' !== $row['end_date'] && $row['end_date'] < $today ) {
+				$ended  = true;
+				$ends[] = $this->get_day_end_time( $row['end_date'] );
+			}
+
+			$coupon_end = $this->get_coupon_end_time( $row, $coupons, $today );
+
+			if ( null !== $coupon_end ) {
+				$ended  = true;
+				$ends[] = $coupon_end;
+			}
+
+			if ( ! $ended ) {
+				$times[ $post_id ] = null;
+
+				continue;
+			}
+
+			$ends[] = $row['ended_time'];
+			$ends   = array_filter( $ends );
+
+			$times[ $post_id ] = $ends ? (int) min( $ends ) : 0;
+		}
+
+		return $times;
+	}
+
+	/**
+	 * Gets when the coupon a Deal shows stopped working at checkout.
+	 *
+	 * The coupon is found by the ID stored when it was picked, as long as it still carries the Deal's
+	 * code, and otherwise by the code, the way WooCommerce's own wc_get_coupon_id_by_code() finds it:
+	 * a published coupon first. A code with no coupon behind it at all counts as ended only when a
+	 * stored ID proves one existed; a typed code never backed by a coupon may be one the Vendor honours
+	 * in person, and is left alone.
+	 *
+	 * @param array  $row Deal details from query_deal_rows().
+	 * @param array  $coupons Coupons from query_coupon_rows().
+	 * @param string $today Today as Y-m-d in the site's timezone.
+	 * @return int|null Null while the coupon works (or there is none), 0 when it stopped at an unknown
+	 *                  moment, otherwise the Unix time it stopped.
+	 */
+	protected function get_coupon_end_time( $row, $coupons, $today ) {
+		if ( '' === $row['code'] ) {
+			return null;
+		}
+
+		$coupon = null;
+
+		if ( $row['coupon_id'] && isset( $coupons['ids'][ $row['coupon_id'] ] ) && 0 === strcasecmp( $coupons['ids'][ $row['coupon_id'] ]['code'], $row['code'] ) ) {
+			$coupon = $coupons['ids'][ $row['coupon_id'] ];
+		}
+
+		if ( ! $coupon ) {
+			$key = $this->get_code_key( $row['code'] );
+
+			if ( isset( $coupons['codes'][ $key ] ) ) {
+				$coupon = $coupons['codes'][ $key ];
+			}
+		}
+
+		if ( ! $coupon ) {
+			return $row['coupon_id'] ? 0 : null;
+		}
+
+		if ( 'trash' === $coupon['status'] ) {
+			return $coupon['trashed'];
+		}
+
+		// A draft or scheduled coupon may still be on its way; only a published one is judged.
+		if ( 'publish' !== $coupon['status'] ) {
+			return null;
+		}
+
+		$ends   = [];
+		$expiry = $this->format_coupon_expiry( $coupon['date_expires'] );
+
+		if ( '' !== $expiry && $expiry < $today ) {
+			$ends[] = $this->get_day_end_time( $expiry );
+		}
+
+		if ( $coupon['usage_limit'] && $coupon['usage_count'] >= $coupon['usage_limit'] ) {
+			$ends[] = 0;
+		}
+
+		if ( ! $ends ) {
+			return null;
+		}
+
+		$known = array_filter( $ends );
+
+		return $known ? (int) min( $known ) : 0;
+	}
+
+	/**
+	 * Reads every coupon the given Deals could be showing, in one query.
+	 *
+	 * @param array $rows Deal details from query_deal_rows().
+	 * @return array{ids: array<int, array>, codes: array<string, array>} Coupons by ID, and the best
+	 *                                                                     coupon for each code.
+	 */
+	protected function query_coupon_rows( $rows ) {
+		global $wpdb;
+
+		$coupons = [
+			'ids'   => [],
+			'codes' => [],
+		];
+
+		$ids   = [ 0 ];
+		$codes = [];
+
+		foreach ( $rows as $row ) {
+			if ( '' === $row['code'] ) {
+				continue;
+			}
+
+			$codes[ $this->get_code_key( $row['code'] ) ] = $row['code'];
+
+			if ( $row['coupon_id'] ) {
+				$ids[] = $row['coupon_id'];
+			}
+		}
+
+		if ( ! $codes ) {
+			return $coupons;
+		}
+
+		$ids   = array_values( array_unique( $ids ) );
+		$codes = array_values( $codes );
+
+		$sql = "SELECT c.ID, c.post_title, c.post_status, x.meta_value AS date_expires, l.meta_value AS usage_limit, u.meta_value AS usage_count, t.meta_value AS trashed
+			FROM {$wpdb->posts} c
+			LEFT JOIN {$wpdb->postmeta} x ON x.post_id = c.ID AND x.meta_key = 'date_expires'
+			LEFT JOIN {$wpdb->postmeta} l ON l.post_id = c.ID AND l.meta_key = 'usage_limit'
+			LEFT JOIN {$wpdb->postmeta} u ON u.post_id = c.ID AND u.meta_key = 'usage_count'
+			LEFT JOIN {$wpdb->postmeta} t ON t.post_id = c.ID AND t.meta_key = '_wp_trash_meta_time'
+			WHERE c.post_type = 'shop_coupon'
+			AND ( c.ID IN (" . implode( ',', array_fill( 0, count( $ids ), '%d' ) ) . ') OR c.post_title IN (' . implode( ',', array_fill( 0, count( $codes ), '%s' ) ) . ') )
+			ORDER BY c.ID DESC';
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared -- only placeholders are added to the fixed SQL above and every value goes through prepare(); one query for a whole page of Deals, which WP_Query cannot express with the meta it needs.
+		$results = $wpdb->get_results( $wpdb->prepare( $sql, array_merge( $ids, $codes ) ), ARRAY_A );
+
+		// Published beats binned beats anything else; among equals the newest wins, as the rows come
+		// newest first.
+		$rank = [
+			'publish' => 2,
+			'trash'   => 1,
+		];
+
+		foreach ( (array) $results as $result ) {
+			$coupon = [
+				'id'           => absint( $result['ID'] ),
+				'code'         => trim( (string) $result['post_title'] ),
+				'status'       => (string) $result['post_status'],
+				'date_expires' => (string) $result['date_expires'],
+				'usage_limit'  => absint( $result['usage_limit'] ),
+				'usage_count'  => absint( $result['usage_count'] ),
+				'trashed'      => absint( $result['trashed'] ),
+			];
+
+			if ( isset( $coupons['ids'][ $coupon['id'] ] ) ) {
+				continue;
+			}
+
+			$coupons['ids'][ $coupon['id'] ] = $coupon;
+
+			$key = $this->get_code_key( $coupon['code'] );
+
+			if ( ! isset( $coupons['codes'][ $key ] ) || hp\get_array_value( $rank, $coupon['status'], 0 ) > hp\get_array_value( $rank, $coupons['codes'][ $key ]['status'], 0 ) ) {
+				$coupons['codes'][ $key ] = $coupon;
+			}
+		}
+
+		return $coupons;
+	}
+
+	/**
+	 * Gets the form of a coupon code used to match it, ignoring case as WooCommerce does.
+	 *
+	 * @param string $code Coupon code.
+	 * @return string
+	 */
+	protected function get_code_key( $code ) {
+		$code = trim( (string) $code );
+
+		return function_exists( 'mb_strtolower' ) ? mb_strtolower( $code ) : strtolower( $code );
+	}
+
+	/**
+	 * Gets the moment an inclusive Y-m-d date is over: midnight at its end, in the site's timezone.
+	 *
+	 * @param string $date Date as Y-m-d.
+	 * @return int Unix time, or 0 for a date that cannot be read.
+	 */
+	protected function get_day_end_time( $date ) {
+		$day = date_create_immutable_from_format( '!Y-m-d', substr( (string) $date, 0, 10 ), wp_timezone() );
+
+		return $day ? $day->modify( '+1 day' )->getTimestamp() : 0;
+	}
+
+	/**
+	 * Records the end of the Deals showing a coupon that is being deleted for good.
+	 *
+	 * HivePress Marketplace deletes a Vendor's coupon outright rather than binning it
+	 * (hivepress/includes/models/class-post.php, delete(): wp_delete_post( $id, true )), which leaves
+	 * nothing behind to tell it apart from a code that never had a coupon. So the Deals showing it are
+	 * given the coupon's ID and the time, and read as ended from then on.
+	 *
+	 * @param int      $post_id Post ID.
+	 * @param \WP_Post $post Post object.
+	 * @return void
+	 */
+	public function record_deleted_coupon( $post_id, $post = null ) {
+		$post = $post instanceof \WP_Post ? $post : get_post( $post_id );
+
+		if ( ! $post instanceof \WP_Post || 'shop_coupon' !== $post->post_type ) {
+			return;
+		}
+
+		$code = trim( (string) $post->post_title );
+
+		if ( '' === $code ) {
+			return;
+		}
+
+		$rows = $this->query_deal_rows( 'code', [ $code ] );
+
+		foreach ( $rows as $deal_id => $row ) {
+			if ( $row['coupon_id'] && absint( $post->ID ) !== $row['coupon_id'] ) {
+				continue;
+			}
+
+			if ( ! $row['coupon_id'] ) {
+				update_post_meta( $deal_id, 'hp_coupon_id', absint( $post->ID ) );
+			}
+
+			if ( ! $row['ended_time'] ) {
+				update_post_meta( $deal_id, 'hp_hpsw_ended_time', time() );
+			}
+
+			unset( $this->ended_times[ $deal_id ] );
+		}
+
+		$this->hidden_deal_ids = null;
+	}
+
+	/**
+	 * The daily pass over ended Deals: records when each ended, and moves those due to the Bin.
+	 *
+	 * Hiding needs nothing from this pass, since walls and post pages test for it as they are drawn;
+	 * the recorded time is what a grace period counts from when nothing else says when a Deal ended.
+	 * Works in batches of ENDED_BATCH by ascending ID, and hands anything past ENDED_LIMIT to a
+	 * follow-up run a minute later, so no single request runs long on a large site.
+	 *
+	 * Binning is wp_trash_post() only, never a permanent delete: WordPress empties the Bin on its own
+	 * schedule (EMPTY_TRASH_DAYS), and until then an administrator can restore the post. Pending posts
+	 * are left for the administrator, because binning one sends the Vendor the rejection email.
+	 *
+	 * @param int $after Only Deals with a higher ID; set by a follow-up run.
+	 * @return void
+	 */
+	public function tidy_ended_deals( $after = 0 ) {
+		$mode = $this->get_ended_mode();
+
+		if ( 'keep' === $mode ) {
+			return;
+		}
+
+		$after   = absint( $after );
+		$handled = 0;
+		$batch   = 0;
+		$today   = current_time( 'Y-m-d' );
+
+		do {
+			$rows = $this->query_deal_rows( 'tidy', [ $after, $today, self::ENDED_BATCH ] );
+
+			if ( ! $rows ) {
+				break;
+			}
+
+			$after    = max( array_keys( $rows ) );
+			$batch    = count( $rows );
+			$handled += $batch;
+
+			foreach ( $this->resolve_ended_times( $rows ) as $post_id => $time ) {
+				if ( null === $time ) {
+
+					// Running again (a new coupon, a later date): any earlier record no longer applies.
+					if ( $rows[ $post_id ]['ended_time'] ) {
+						delete_post_meta( $post_id, 'hp_hpsw_ended_time' );
+					}
+
+					continue;
+				}
+
+				// Only an end with no date of its own is recorded (a used-up or deleted coupon), so a
+				// Deal whose date is later moved on never keeps a stale record.
+				if ( ! $time ) {
+					$time = time();
+
+					update_post_meta( $post_id, 'hp_hpsw_ended_time', $time );
+				}
+
+				$this->ended_times[ $post_id ] = $time;
+
+				if ( 'trash' === $mode && $this->is_ended_due( $time ) ) {
+					wp_trash_post( $post_id );
+				}
+			}
+		} while ( self::ENDED_BATCH === $batch && $handled < self::ENDED_LIMIT );
+
+		// The limit was reached with Deals still to look at: a follow-up run carries on from there.
+		if ( $rows && self::ENDED_BATCH === $batch ) {
+			wp_schedule_single_event( time() + MINUTE_IN_SECONDS, self::ENDED_HOOK, [ $after ] );
+		}
+
+		$this->hidden_deal_ids = null;
 	}
 
 	/*
@@ -1775,7 +2368,7 @@ final class Hpsw_Wall extends Component {
 			return [ 'pending', esc_html_x( 'Pending', 'wall post', 'social-walls-for-hivepress' ) ];
 		}
 
-		if ( $post->is_expired() ) {
+		if ( $post->is_ended() ) {
 			return [ 'trash', esc_html__( 'Ended', 'social-walls-for-hivepress' ) ];
 		}
 
@@ -1893,6 +2486,14 @@ final class Hpsw_Wall extends Component {
 				'ID'         => 'DESC',
 			],
 		];
+
+		// Deals whose coupon ended, when the owner hides or bins ended Deals. Left out here rather than
+		// after the query, so page numbers and counts stay right before the daily pass runs.
+		$hidden = $this->get_hidden_deal_ids();
+
+		if ( $hidden ) {
+			$query_args['post__not_in'] = $hidden;
+		}
 
 		if ( is_array( $args['vendor_ids'] ) ) {
 			$query_args['post_parent__in'] = array_map( 'absint', $args['vendor_ids'] );
@@ -2419,6 +3020,9 @@ final class Hpsw_Wall extends Component {
 	 */
 	public function render_posts( $post_ids, $columns = 1, $owner_view = false ) {
 		$engagement = $this->get_engagement( $post_ids );
+
+		// Every card asks whether its Deal has ended; answered here for all of them at once.
+		$this->load_ended_times( $post_ids );
 		$width      = hp\get_column_width( max( 1, min( 3, absint( $columns ) ) ) );
 		$item_class = $owner_view ? 'hp-col-sm-6 hp-col-xs-12' : 'hp-col-sm-' . $width . ' hp-col-xs-12';
 

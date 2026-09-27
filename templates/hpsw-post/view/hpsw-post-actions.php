@@ -54,8 +54,8 @@ $hpsw_liked = ! empty( $hpsw_engagement['liked'] );
 	?>
 	<span class="hpsw-post__counts">
 	<?php if ( $hpsw_likes ) : ?>
-		<?php if ( ! empty( $hpsw_owner_view ) ) : ?>
-			<?php // The owner's own list shows the count only: a pending or hidden post cannot take a like. ?>
+		<?php if ( ! empty( $hpsw_owner_view ) && ! $hpsw_wall->is_post_visible( $hpsw_post ) ) : ?>
+			<?php // On the owner's own list a post visitors cannot see (pending, hidden, an ended Deal taken off the walls) shows the count only, since the like route refuses it; a live post gets the same working heart as the public walls. ?>
 			<span class="hpsw-post__like" title="<?php esc_attr_e( 'Likes', 'social-walls-for-hivepress' ); ?>">
 				<i class="hp-icon fas fa-heart"></i>
 				<span class="hpsw-post__count"><?php echo esc_html( number_format_i18n( absint( $hpsw_engagement['likes'] ) ) ); ?></span>

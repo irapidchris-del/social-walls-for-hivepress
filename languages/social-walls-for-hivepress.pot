@@ -2,14 +2,14 @@
 # This file is distributed under the GPLv2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Social Walls for HivePress 1.0.4\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/social-walls-for-hivepress\n"
+"Project-Id-Version: Social Walls for HivePress 1.1.0\n"
+"Report-Msgid-Bugs-To: https://github.com/irapidchris-del/social-walls-for-hivepress/issues\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-27T16:14:26+00:00\n"
+"POT-Creation-Date: 2026-09-27T19:47:46+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: social-walls-for-hivepress\n"
@@ -56,8 +56,8 @@ msgid "Manage Post"
 msgstr ""
 
 #: includes/blocks/class-hpsw-post-manage.php:74
-#: includes/components/class-hpsw-wall.php:1775
-#: includes/models/class-hpsw-post.php:150
+#: includes/components/class-hpsw-wall.php:2358
+#: includes/models/class-hpsw-post.php:159
 msgctxt "wall post"
 msgid "Pending"
 msgstr ""
@@ -74,18 +74,18 @@ msgstr ""
 
 #. translators: %s: date.
 #: includes/blocks/class-hpsw-post-manage.php:88
-#: includes/components/class-hpsw-wall.php:1787
+#: includes/components/class-hpsw-wall.php:2370
 #, php-format
 msgid "Pinned until %s"
 msgstr ""
 
 #: includes/blocks/class-hpsw-post-manage.php:99
-#: templates/hpsw-post/view/block/hpsw-post-owner.php:38
+#: templates/hpsw-post/view/block/hpsw-post-owner.php:42
 msgid "Extend pin"
 msgstr ""
 
 #: includes/blocks/class-hpsw-post-manage.php:99
-#: templates/hpsw-post/view/block/hpsw-post-owner.php:38
+#: templates/hpsw-post/view/block/hpsw-post-owner.php:42
 msgid "Pin to the top"
 msgstr ""
 
@@ -112,7 +112,7 @@ msgstr ""
 #: includes/blocks/class-hpsw-post-manage.php:131
 #: includes/forms/class-hpsw-post-delete.php:52
 #: includes/templates/class-hpsw-post-edit-page.php:64
-#: templates/hpsw-post/view/block/hpsw-post-owner.php:54
+#: templates/hpsw-post/view/block/hpsw-post-owner.php:58
 msgid "Delete Post"
 msgstr ""
 
@@ -150,7 +150,7 @@ msgid "Show"
 msgstr ""
 
 #: includes/blocks/class-hpsw-wall.php:103
-#: includes/components/class-hpsw-wall.php:725
+#: includes/components/class-hpsw-wall.php:756
 #: includes/forms/class-hpsw-post-filter.php:62
 msgid "Deals and Updates"
 msgstr ""
@@ -213,19 +213,19 @@ msgid "Likes and Comments"
 msgstr ""
 
 #: includes/components/class-hpsw-wall-admin.php:199
-#: includes/components/class-hpsw-wall.php:1241
+#: includes/components/class-hpsw-wall.php:1272
 #: includes/configs/meta-boxes.php:67
-#: includes/controllers/class-hpsw-wall.php:739
-#: includes/models/class-hpsw-post.php:82
+#: includes/controllers/class-hpsw-wall.php:762
+#: includes/models/class-hpsw-post.php:83
 #: templates/hpsw-post/view/hpsw-post-meta.php:63
 msgid "Deal"
 msgstr ""
 
 #: includes/components/class-hpsw-wall-admin.php:199
-#: includes/components/class-hpsw-wall.php:1241
+#: includes/components/class-hpsw-wall.php:1272
 #: includes/configs/meta-boxes.php:66
-#: includes/controllers/class-hpsw-wall.php:739
-#: includes/models/class-hpsw-post.php:81
+#: includes/controllers/class-hpsw-wall.php:762
+#: includes/models/class-hpsw-post.php:82
 #: templates/hpsw-post/view/hpsw-post-meta.php:65
 msgid "Update"
 msgstr ""
@@ -236,165 +236,166 @@ msgstr ""
 msgid "%1$s likes, %2$s comments"
 msgstr ""
 
-#: includes/components/class-hpsw-wall-admin.php:232
+#: includes/components/class-hpsw-wall-admin.php:257
 #: templates/hpsw-post/view/hpsw-post-meta.php:60
 msgid "Pinned"
 msgstr ""
 
-#: includes/components/class-hpsw-wall-admin.php:238
-#: includes/components/class-hpsw-wall.php:1779
+#: includes/components/class-hpsw-wall-admin.php:264
+#: includes/components/class-hpsw-wall.php:2362
+#: templates/hpsw-post/view/hpsw-post-ends.php:41
 msgid "Ended"
 msgstr ""
 
 #. translators: 1: number of posts, 2: date.
-#: includes/components/class-hpsw-wall.php:430
+#: includes/components/class-hpsw-wall.php:461
 #, php-format
 msgid "You have used your %1$s wall post for this month. You can post again from %2$s."
 msgid_plural "You have used all %1$s of your wall posts for this month. You can post again from %2$s."
 msgstr[0] ""
 msgstr[1] ""
 
-#: includes/components/class-hpsw-wall.php:590
+#: includes/components/class-hpsw-wall.php:621
 #: includes/configs/post-types.php:39
 #: includes/configs/post-types.php:45
 msgid "Wall Posts"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:591
+#: includes/components/class-hpsw-wall.php:622
 msgid "Allow posting to the wall"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:592
+#: includes/components/class-hpsw-wall.php:623
 msgid "Tick this on the plans that include wall posts. Once any plan has it ticked, only Vendors on one of those plans can post. Leave it unticked on every plan to let every Vendor post."
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:598
+#: includes/components/class-hpsw-wall.php:629
 msgid "Wall Posts per Month"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:599
+#: includes/components/class-hpsw-wall.php:630
 msgid "Unlimited wall posts"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:600
+#: includes/components/class-hpsw-wall.php:631
 msgid "Lets Vendors on this plan post as often as they like, whatever the monthly allowance under Settings, Social Walls."
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:606
+#: includes/components/class-hpsw-wall.php:637
 msgid "Wall Post Allowance (per month)"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:607
+#: includes/components/class-hpsw-wall.php:638
 msgid "How many wall posts a Vendor on this plan may add each calendar month. Leave empty to use the allowance under Settings, Social Walls. A Vendor on more than one plan gets the most generous."
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:738
+#: includes/components/class-hpsw-wall.php:769
 #: includes/controllers/class-hpsw-wall.php:93
 #: includes/templates/class-hpsw-wall-edit-page.php:34
 msgid "Wall"
 msgstr ""
 
 #. translators: 1: wall post ID, 2: date.
-#: includes/components/class-hpsw-wall.php:1082
+#: includes/components/class-hpsw-wall.php:1113
 #, php-format
 msgid "Wall post #%1$d pinned until %2$s."
 msgstr ""
 
 #. translators: %d: wall post ID.
-#: includes/components/class-hpsw-wall.php:1104
+#: includes/components/class-hpsw-wall.php:1135
 #, php-format
 msgid "Pin on wall post #%d withdrawn."
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:1131
+#: includes/components/class-hpsw-wall.php:1162
 msgid "Wall post"
 msgstr ""
 
 #. translators: 1: coupon code, 2: discount, for example "20%" or "£5.00".
-#: includes/components/class-hpsw-wall.php:1630
+#: includes/components/class-hpsw-wall.php:1671
 #, php-format
 msgid "%1$s (%2$s off)"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:1662
+#: includes/components/class-hpsw-wall.php:1704
 msgid "Choose one of your own coupons, or No coupon."
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:1744
-#: includes/components/class-hpsw-wall.php:1748
+#: includes/components/class-hpsw-wall.php:2327
+#: includes/components/class-hpsw-wall.php:2331
 #: includes/templates/class-hpsw-post-view-page.php:115
 msgid "Share"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:1750
+#: includes/components/class-hpsw-wall.php:2333
 msgid "Share on Facebook"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:1751
+#: includes/components/class-hpsw-wall.php:2334
 msgid "Share on WhatsApp"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:1752
+#: includes/components/class-hpsw-wall.php:2335
 msgid "Copy link"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:1753
+#: includes/components/class-hpsw-wall.php:2336
 msgid "Link copied"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:1755
+#: includes/components/class-hpsw-wall.php:2338
 msgid "QR code for this page"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:1756
+#: includes/components/class-hpsw-wall.php:2339
 msgid "Scan with a phone camera to open this page."
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:1794
-#: includes/models/class-hpsw-post.php:147
+#: includes/components/class-hpsw-wall.php:2377
+#: includes/models/class-hpsw-post.php:156
 msgctxt "wall post"
 msgid "Published"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:1797
-#: includes/models/class-hpsw-post.php:149
+#: includes/components/class-hpsw-wall.php:2380
+#: includes/models/class-hpsw-post.php:158
 msgctxt "wall post"
 msgid "Hidden"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:2489
+#: includes/components/class-hpsw-wall.php:3083
 msgid "Previous page"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:2490
+#: includes/components/class-hpsw-wall.php:3084
 msgid "Next page"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:2499
+#: includes/components/class-hpsw-wall.php:3093
 msgid "Wall posts"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:2500
+#: includes/components/class-hpsw-wall.php:3094
 msgid "Wall posts navigation"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:2580
+#: includes/components/class-hpsw-wall.php:3174
 msgid "Copied"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:2581
+#: includes/components/class-hpsw-wall.php:3175
 msgid "My location"
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:2582
+#: includes/components/class-hpsw-wall.php:3176
 msgid "Your like could not be saved. Please try again."
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:2583
+#: includes/components/class-hpsw-wall.php:3177
 msgid "Delete this comment? Its replies go with it."
 msgstr ""
 
-#: includes/components/class-hpsw-wall.php:2584
+#: includes/components/class-hpsw-wall.php:3178
 msgid "The comment could not be deleted."
 msgstr ""
 
@@ -403,13 +404,13 @@ msgid "Wall Post Settings"
 msgstr ""
 
 #: includes/configs/meta-boxes.php:59
-#: includes/models/class-hpsw-post.php:75
+#: includes/models/class-hpsw-post.php:76
 msgid "Post Type"
 msgstr ""
 
 #: includes/configs/meta-boxes.php:72
 #: includes/forms/class-hpsw-post-update.php:211
-#: includes/models/class-hpsw-post.php:107
+#: includes/models/class-hpsw-post.php:108
 msgid "Coupon Code"
 msgstr ""
 
@@ -418,7 +419,7 @@ msgid "Deals only. Shown with a one-click copy button."
 msgstr ""
 
 #: includes/configs/meta-boxes.php:80
-#: includes/models/class-hpsw-post.php:114
+#: includes/models/class-hpsw-post.php:123
 msgid "Ends On"
 msgstr ""
 
@@ -427,7 +428,7 @@ msgid "Deals only. The Deal is shown until the end of this day, then disappears 
 msgstr ""
 
 #: includes/configs/meta-boxes.php:88
-#: includes/models/class-hpsw-post.php:123
+#: includes/models/class-hpsw-post.php:132
 msgid "Applies to"
 msgstr ""
 
@@ -599,139 +600,172 @@ msgid "How far from the chosen place the wall looks when a visitor has not chose
 msgstr ""
 
 #: includes/configs/settings.php:132
-msgid "Comments and Likes"
+#: includes/configs/settings.php:138
+msgid "Ended Deals"
 msgstr ""
 
 #: includes/configs/settings.php:133
-msgid "Signed-in visitors can like a post with the heart, and comment on it from the post's own page. Vendors are emailed about new comments on their posts, and commenters about replies. Comments can be unapproved or deleted under Comments in this dashboard."
-msgstr ""
-
-#: includes/configs/settings.php:138
-msgid "Who Can Comment"
+msgid "A Deal has ended once its end date has passed, or once the coupon it shows stops working at checkout: the coupon's own expiry date has passed, it has been used as many times as it allows, or it has been deleted or moved to the Bin. A Deal whose end date has passed already leaves the walls by itself. Choose here what else happens to ended Deals. Updates are never affected."
 msgstr ""
 
 #: includes/configs/settings.php:139
-msgid "Anyone signed in lets every member comment. Vendors only limits comments to people with a published Vendor profile. Nobody hides comments everywhere, including ones already written, and brings them back if you change your mind."
+msgid "Keep leaves every ended Deal in place, marked as Ended, with its coupon code hidden. Its own page still opens, and a Deal whose coupon stopped working stays on the walls. Hide takes ended Deals off every wall and profile straight away, and their pages stop opening for visitors; the Vendor still sees them, marked as Ended, on the Wall page in their account. Move to the Bin hides them the same way, then moves them to the Bin once a day, which also removes them from the Vendor's Wall page. An administrator can restore a binned post under Vendors, Wall Posts, Bin, until WordPress empties the Bin by itself (after 30 days, unless your site is set up differently)."
 msgstr ""
 
 #: includes/configs/settings.php:145
-msgid "Anyone signed in"
+msgid "Keep and show as Ended"
 msgstr ""
 
 #: includes/configs/settings.php:146
-msgid "Vendors only"
+msgid "Hide from walls"
 msgstr ""
 
 #: includes/configs/settings.php:147
-msgid "Nobody"
+msgid "Move to the Bin"
 msgstr ""
 
 #: includes/configs/settings.php:152
+msgid "Grace Period (days)"
+msgstr ""
+
+#: includes/configs/settings.php:153
+msgid "How many days an ended Deal stays as it is before it is hidden or moved to the Bin. Leave it at 0 to act as soon as a Deal ends. When a coupon is used up, the days count from when the plugin first notices, which can be up to a day later. Has no effect while ended Deals are kept."
+msgstr ""
+
+#: includes/configs/settings.php:164
+msgid "Comments and Likes"
+msgstr ""
+
+#: includes/configs/settings.php:165
+msgid "Signed-in visitors can like a post with the heart, and comment on it from the post's own page. Vendors are emailed about new comments on their posts, and commenters about replies. Comments can be unapproved or deleted under Comments in this dashboard."
+msgstr ""
+
+#: includes/configs/settings.php:170
+msgid "Who Can Comment"
+msgstr ""
+
+#: includes/configs/settings.php:171
+msgid "Anyone signed in lets every member comment. Vendors only limits comments to people with a published Vendor profile. Nobody hides comments everywhere, including ones already written, and brings them back if you change your mind."
+msgstr ""
+
+#: includes/configs/settings.php:177
+msgid "Anyone signed in"
+msgstr ""
+
+#: includes/configs/settings.php:178
+msgid "Vendors only"
+msgstr ""
+
+#: includes/configs/settings.php:179
+msgid "Nobody"
+msgstr ""
+
+#: includes/configs/settings.php:184
 #: templates/hpsw-post/view/hpsw-post-actions.php:59
 msgid "Likes"
 msgstr ""
 
-#: includes/configs/settings.php:153
+#: includes/configs/settings.php:185
 msgid "Show the heart and let members like posts"
 msgstr ""
 
-#: includes/configs/settings.php:154
+#: includes/configs/settings.php:186
 msgid "Untick to hide the heart and its count everywhere. Likes already given are kept, and return if you tick this again."
 msgstr ""
 
-#: includes/configs/settings.php:163
+#: includes/configs/settings.php:195
 msgid "Pinned Posts"
 msgstr ""
 
-#: includes/configs/settings.php:164
+#: includes/configs/settings.php:196
 msgid "A pinned post sits at the top of every wall it appears on, above newer posts, until its time runs out. To sell pinning, create a WooCommerce product for it (a virtual product, hidden from the shop catalogue) and choose it below. Vendors then see a \"Pin to the top\" button beside each live post on their Wall page and go straight to the checkout. You can also pin any post yourself from its edit screen under Vendors, Wall Posts."
 msgstr ""
 
-#: includes/configs/settings.php:169
+#: includes/configs/settings.php:201
 msgid "Pinning Product"
 msgstr ""
 
-#: includes/configs/settings.php:170
+#: includes/configs/settings.php:202
 msgid "The WooCommerce product a Vendor buys to pin one post. Its price is what they pay. Leave empty to switch paid pinning off. Needs WooCommerce."
 msgstr ""
 
-#: includes/configs/settings.php:178
+#: includes/configs/settings.php:210
 msgid "Pinned for (days)"
 msgstr ""
 
-#: includes/configs/settings.php:179
+#: includes/configs/settings.php:211
 msgid "How long one purchase keeps a post pinned. Buying again while a post is pinned adds the time on to the end."
 msgstr ""
 
-#: includes/configs/settings.php:190
+#: includes/configs/settings.php:222
 msgid "Sharing"
 msgstr ""
 
-#: includes/configs/settings.php:191
+#: includes/configs/settings.php:223
 msgid "A Share button on each post's own page lets visitors share it on Facebook or WhatsApp, copy its link, or scan a QR code with a phone. On a phone or tablet the button opens the device's own share menu instead. Nothing is sent to Facebook or WhatsApp unless a visitor chooses to share, and the QR code is drawn in the visitor's browser."
 msgstr ""
 
-#: includes/configs/settings.php:196
+#: includes/configs/settings.php:228
 msgid "Share Button"
 msgstr ""
 
-#: includes/configs/settings.php:197
+#: includes/configs/settings.php:229
 msgid "Show a Share button on each post's page"
 msgstr ""
 
-#: includes/configs/settings.php:198
+#: includes/configs/settings.php:230
 msgid "Untick to remove the button from every post page."
 msgstr ""
 
-#: includes/configs/settings.php:205
+#: includes/configs/settings.php:237
 msgid "QR Code Logo"
 msgstr ""
 
-#: includes/configs/settings.php:206
+#: includes/configs/settings.php:238
 msgid "Select Image"
 msgstr ""
 
-#: includes/configs/settings.php:207
+#: includes/configs/settings.php:239
 msgid "Optional. A small image, such as your logo, drawn in the middle of the QR code. A square image on a plain background works best. Leave it empty for a plain QR code."
 msgstr ""
 
-#: includes/configs/settings.php:217
+#: includes/configs/settings.php:249
 msgid "Notifications"
 msgstr ""
 
-#: includes/configs/settings.php:218
+#: includes/configs/settings.php:250
 msgid "Every email this plugin sends can be reworded under HivePress, Emails. If Notifications for HivePress is active, each one also arrives as an on-site notification, following each member's own notification settings."
 msgstr ""
 
-#: includes/configs/settings.php:223
+#: includes/configs/settings.php:255
 msgid "Followers"
 msgstr ""
 
-#: includes/configs/settings.php:224
+#: includes/configs/settings.php:256
 msgid "Email a Vendor's followers when they post"
 msgstr ""
 
-#: includes/configs/settings.php:225
+#: includes/configs/settings.php:257
 msgid "Needs Follow Vendors for HivePress. Followers hear about each post once, when it goes live, and the emails are sent in the background in batches, so posting stays quick however many followers a Vendor has."
 msgstr ""
 
-#: includes/configs/settings.php:234
+#: includes/configs/settings.php:266
 msgid "Removing the Plugin"
 msgstr ""
 
-#: includes/configs/settings.php:235
+#: includes/configs/settings.php:267
 msgid "Your settings, every wall post, comment and like are kept if you delete this plugin, whatever the delete screen's generic warning says, unless you tick the box below. Deactivating the plugin never removes anything either."
 msgstr ""
 
-#: includes/configs/settings.php:240
+#: includes/configs/settings.php:272
 msgid "Delete All Data"
 msgstr ""
 
-#: includes/configs/settings.php:241
+#: includes/configs/settings.php:273
 msgid "Delete everything this plugin stored when the plugin is deleted"
 msgstr ""
 
-#: includes/configs/settings.php:242
+#: includes/configs/settings.php:274
 msgid "Removes every wall post with its comments and likes, the settings on this tab, the posting options added to membership plans, and any reworded copy of this plugin's emails. Photos stay in the Media Library. This cannot be undone."
 msgstr ""
 
@@ -743,12 +777,12 @@ msgstr ""
 msgid "Your plan does not include wall posts."
 msgstr ""
 
-#: includes/controllers/class-hpsw-wall.php:398
+#: includes/controllers/class-hpsw-wall.php:416
 msgid "You cannot comment on this post."
 msgstr ""
 
 #. translators: 1: "Deal" or "Update", 2: Vendor name.
-#: includes/controllers/class-hpsw-wall.php:738
+#: includes/controllers/class-hpsw-wall.php:761
 #, php-format
 msgid "%1$s from %2$s"
 msgstr ""
@@ -985,11 +1019,11 @@ msgstr ""
 msgid "Comment"
 msgstr ""
 
-#: includes/models/class-hpsw-post.php:89
+#: includes/models/class-hpsw-post.php:90
 msgid "Headline"
 msgstr ""
 
-#: includes/models/class-hpsw-post.php:96
+#: includes/models/class-hpsw-post.php:97
 msgid "Text"
 msgstr ""
 
@@ -1053,15 +1087,15 @@ msgid_plural "Checked %s plugins for updates: all are up to date."
 msgstr[0] ""
 msgstr[1] ""
 
-#: social-walls-for-hivepress.php:136
+#: social-walls-for-hivepress.php:156
 msgid "Settings"
 msgstr ""
 
-#: social-walls-for-hivepress.php:152
+#: social-walls-for-hivepress.php:172
 msgid "Social Walls for HivePress requires the HivePress plugin to be installed and activated."
 msgstr ""
 
-#: social-walls-for-hivepress.php:183
+#: social-walls-for-hivepress.php:203
 msgid "Donate"
 msgstr ""
 
@@ -1069,11 +1103,11 @@ msgstr ""
 msgid "View Post"
 msgstr ""
 
-#: templates/hpsw-post/view/block/hpsw-post-owner.php:35
+#: templates/hpsw-post/view/block/hpsw-post-owner.php:39
 msgid "Edit"
 msgstr ""
 
-#: templates/hpsw-post/view/block/hpsw-post-owner.php:42
+#: templates/hpsw-post/view/block/hpsw-post-owner.php:46
 msgid "View"
 msgstr ""
 
@@ -1103,27 +1137,27 @@ msgstr ""
 msgid "comments"
 msgstr ""
 
-#: templates/hpsw-post/view/hpsw-post-deal.php:68
+#: templates/hpsw-post/view/hpsw-post-deal.php:69
 msgid "Code"
 msgstr ""
 
-#: templates/hpsw-post/view/hpsw-post-deal.php:69
 #: templates/hpsw-post/view/hpsw-post-deal.php:70
+#: templates/hpsw-post/view/hpsw-post-deal.php:71
 msgid "Copy the code"
 msgstr ""
 
-#: templates/hpsw-post/view/hpsw-post-deal.php:73
+#: templates/hpsw-post/view/hpsw-post-deal.php:74
 msgid "Copy"
 msgstr ""
 
 #. translators: %s: date.
-#: templates/hpsw-post/view/hpsw-post-ends.php:41
+#: templates/hpsw-post/view/hpsw-post-ends.php:46
 #, php-format
 msgid "Ended on %s"
 msgstr ""
 
 #. translators: %s: date.
-#: templates/hpsw-post/view/hpsw-post-ends.php:41
+#: templates/hpsw-post/view/hpsw-post-ends.php:46
 #, php-format
 msgid "Ends on %s"
 msgstr ""

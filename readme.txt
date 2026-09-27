@@ -4,7 +4,7 @@ Tags: hivepress, vendors, deals, coupons, wall
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.6
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -17,6 +17,7 @@ HivePress gives every Vendor a profile and their Listings. This plugin adds a pl
 Features:
 
 * Two kinds of post. A Deal can carry a coupon code with a one-click copy button, an end date after which it disappears from every wall by itself, and a link to one of the Vendor's own Listings. An Update is news or an announcement. Both take text and photos, as many as you allow (four by default, up to ten).
+* Ended Deals tidied for you. A Deal counts as ended once its end date has passed or once its coupon stops working at checkout (expired, used up, deleted or binned). Choose whether ended Deals are kept and marked as Ended (the default), hidden from visitors, or moved to the Bin once a day, with an optional grace period in days first. Updates are never touched.
 * A Wall page in every Vendor's account, to write, edit and delete posts, see how many likes and comments each has, and see how many posts are left this month.
 * Each Vendor's posts on their profile page, newest first, above or below their Listings, one, two or three to a row, with page numbers.
 * The Social Wall block (also a shortcode) for any page, showing posts from every Vendor, with filters for Deals or Updates, keywords, Listing category and location. With HivePress Geolocation active the location filter uses the same place search and radius as the Listing search; without it, it matches the addresses on file. With Geolocation Plus for HivePress as well, the place search uses its map provider and suggestions, and the filter also finds Vendors who travel to the searched place and Vendors whose own Location attributes are nearby. The distance box can be hidden, with a default radius of your choice.
@@ -62,6 +63,16 @@ Posts from every published Vendor, pinned posts first, then newest first. In the
 
 A Deal only shows its coupon code; it does not create a coupon. For the code to work at checkout, HivePress Marketplace must be active with "Allow sellers to create and manage coupons" ticked under HivePress, Settings, Vendors, and the Vendor must create the same code under Coupons in their account. With that switched on, the Deal form lists the Vendor's own coupons to choose from, so the code on the Deal is always one the checkout accepts.
 
+= What happens when a Deal ends? =
+
+A Deal ends once its end date has passed, or once the coupon it shows stops working at checkout: the coupon's own expiry date has passed, it has been used as many times as it allows, or it has been deleted or moved to the Bin. What happens next is up to you, under Settings, Social Walls, Ended Deals:
+
+* Keep and show as Ended (the default). The Deal stays where it is, marked as Ended, with its coupon code hidden. A Deal whose end date has passed leaves the walls by itself, as it always has; its own page still opens.
+* Hide from walls. Ended Deals leave every wall and profile at once, and their pages stop opening for visitors. The Vendor still sees them, marked as Ended, on the Wall page in their account.
+* Move to the Bin. Ended Deals are hidden the same way, then moved to the Bin once a day. Nothing is deleted outright: an administrator can restore a binned post under Vendors, Wall Posts, Bin, until WordPress empties the Bin by itself (after 30 days, unless your site is set up differently).
+
+The Grace Period setting lets an ended Deal stay as it is for a number of days before it is hidden or binned. Updates are never affected.
+
 = The wall's location box shows no place suggestions. Why? =
 
 The suggestions come from the HivePress Geolocation extension's own scripts, which it loads on every page. If a speed plugin or a code snippet removes them (or the map library they need) from ordinary pages, the box on your wall page can no longer suggest places. Allow those scripts on the page that holds the Social Wall block. Until then the box still searches the text typed into it, and the locate icon still finds the visitor's position.
@@ -84,6 +95,12 @@ It is kept, so reinstalling brings everything back. To remove it all, tick "Dele
 * The Facebook and WhatsApp icons in the Share pop-up are from Font Awesome Free 7.1.0 by Fonticons, Inc., licensed under CC BY 4.0 (https://fontawesome.com/license/free).
 
 == Changelog ==
+
+= 1.1.0 =
+* Added: Ended Deals setting under Settings, Social Walls. Choose whether a Deal that has ended is kept and marked as Ended (the default, so nothing changes until you choose otherwise), hidden from visitors, or moved to the Bin once a day, with an optional grace period in days.
+* Added: a Deal now also counts as ended when the coupon it shows has expired, been used up, or been deleted or moved to the Bin. Such a Deal is marked as Ended and its code is no longer shown, so visitors are not offered a code the checkout will refuse.
+* Changed: on the Wall page in a Vendor's account, Edit, Pin, View and Delete now share the full width of each card, with a post's status on its own line above them.
+* Changed: the heart on the Wall page in a Vendor's account now likes and unlikes a live post, just as it does on the public walls. It used to show the count only.
 
 = 1.0.6 =
 * Fixed: the Wall page in a Vendor's account now shows two cards per row on wide screens as intended (1.0.5 still laid them out three across), and the counts keep to the right of the end date. A post's status now shows only when it needs attention (pending, pinned or ended), at the start of the buttons row.
