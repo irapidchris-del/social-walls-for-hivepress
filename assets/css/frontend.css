@@ -656,17 +656,37 @@ a.hpsw-manage__new.button--primary:focus {
 }
 
 /*
- * The owner's row on each card (hpsw-post-owner.php): the status pill on the left, the controls on
- * the right, as a full-width line at the foot of the card's footer, under a thin rule. The rule is a
- * tint of the text colour, so it reads on a light card and on a dark one alike. On a narrow card the
- * controls wrap under the pill and keep to the right.
+ * The owner's controls on each card (hpsw-post-owner.php). The owner block steps out of the layout so
+ * its parts join the footer: the status pill sits beside the end date with the counts on the right,
+ * and Edit, Pin, View and Delete form a row of small outlined buttons underneath, under a thin rule
+ * tinted from the text colour so it reads on light and dark cards alike.
  */
 .hpsw-post--view-block .hp-listing__footer > .hpsw-post__owner {
+	display: contents;
+}
+
+.hpsw-post--view-block .hp-listing__footer > .hpsw-post__ends {
+	order: 1;
+}
+
+.hpsw-post--view-block .hp-listing__footer .hpsw-post__owner .hpsw-post__status {
+	flex: 0 0 auto;
+	order: 2;
+	margin: 0;
+}
+
+.hpsw-post--view-block .hp-listing__footer > .hpsw-post__actions,
+.hpsw-post--view-block .hp-listing__footer .hpsw-post__actions {
+	order: 3;
+}
+
+.hpsw-post--view-block .hp-listing__footer .hpsw-post__owner .hpsw-post__owner-actions {
 	display: flex;
 	flex: 1 0 100%;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: 0.5rem 1rem;
+	order: 4;
+	gap: 0.5rem;
 	box-sizing: border-box;
 	min-width: 0;
 	margin: 0.25rem 0 0;
@@ -675,33 +695,35 @@ a.hpsw-manage__new.button--primary:focus {
 	border-top-color: color-mix(in srgb, currentColor 15%, transparent);
 }
 
-.hpsw-post .hpsw-post__owner .hpsw-post__status {
-	flex: 0 0 auto;
-	margin: 0;
-}
-
-.hpsw-post .hpsw-post__owner .hpsw-post__owner-actions {
-	display: flex;
-	flex: 0 1 auto;
-	flex-wrap: wrap;
-	justify-content: flex-end;
-	align-items: center;
-	gap: 0.5rem 1rem;
-	margin-left: auto;
-}
-
-/* Icon and label a short, even gap apart; core's `.hp-link i:first-child` margin is taken off so
-   the gap is the only spacing, as on the counts. */
-.hpsw-post .hpsw-post__owner-actions .hp-link {
+/* Sized like the coupon's Copy button. The colour is restated on hover and focus so a theme's
+   `a:hover` colour cannot recolour the label. */
+.hpsw-post .hpsw-post__owner-actions a.hpsw-post__owner-button,
+.hpsw-post .hpsw-post__owner-actions a.hpsw-post__owner-button:hover,
+.hpsw-post .hpsw-post__owner-actions a.hpsw-post__owner-button:focus {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.4em;
+	padding: 0.375rem 0.75rem;
+	border: 1px solid rgba(128, 128, 128, 0.35);
+	border-color: color-mix(in srgb, currentColor 22%, transparent);
+	border-radius: 999px;
+	background: transparent;
+	color: inherit;
+	font-size: 80%;
+	font-weight: 600;
+	line-height: 1.2;
 	white-space: nowrap;
 	text-decoration: none;
 }
 
-.hpsw-post .hpsw-post__owner-actions .hp-link .hp-icon {
+.hpsw-post .hpsw-post__owner-actions a.hpsw-post__owner-button:hover,
+.hpsw-post .hpsw-post__owner-actions a.hpsw-post__owner-button:focus-visible {
+	border-color: currentColor;
+}
+
+.hpsw-post .hpsw-post__owner-actions a.hpsw-post__owner-button .hp-icon {
 	margin: 0;
+	font-size: 0.95em;
 }
 
 .hpsw-post__manage {

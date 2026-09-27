@@ -5,7 +5,8 @@
  *
  * Prints nothing unless the wall drew the card for its owner (the `hpsw_owner_view` context, set
  * only by the account Wall page, which lists the viewer's own posts), so public walls never show it.
- * It sits in the card's footer as a full-width row under the counts. Since 1.0.4 it replaces the
+ * Its status pill joins the footer's first row, beside the end date; Edit, Pin, View and Delete form
+ * a row of small buttons under it. Since 1.0.4 it replaces the
  * table row the page printed before, and offers everything that row did, plus Delete behind the
  * same confirmation pop-up as the post's edit page.
  *
@@ -32,17 +33,17 @@ $hpsw_can_pin = $hpsw_wall->get_pin_product_id() && 'publish' === $hpsw_status &
 	<span class="hpsw-post__status hp-status hp-status--<?php echo esc_attr( $hpsw_pill[0] ); ?>"><span><?php echo esc_html( $hpsw_pill[1] ); ?></span></span>
 
 	<div class="hpsw-post__owner-actions">
-		<a href="<?php echo esc_url( hivepress()->router->get_url( 'hpsw_post_edit_page', [ 'hpsw_post_id' => $hpsw_id ] ) ); ?>" class="hpsw-post__edit hp-link"><i class="hp-icon fas fa-edit"></i><span><?php esc_html_e( 'Edit', 'social-walls-for-hivepress' ); ?></span></a>
+		<a href="<?php echo esc_url( hivepress()->router->get_url( 'hpsw_post_edit_page', [ 'hpsw_post_id' => $hpsw_id ] ) ); ?>" class="hpsw-post__edit hpsw-post__owner-button hp-link"><i class="hp-icon fas fa-edit"></i><span><?php esc_html_e( 'Edit', 'social-walls-for-hivepress' ); ?></span></a>
 
 		<?php if ( $hpsw_can_pin ) : ?>
-			<a href="<?php echo esc_url( wp_nonce_url( hivepress()->router->get_url( 'hpsw_post_pin_page', [ 'hpsw_post_id' => $hpsw_id ] ), 'hpsw_pin_' . $hpsw_id ) ); ?>" class="hpsw-post__pin hp-link"><i class="hp-icon fas fa-thumbtack"></i><span><?php echo $hpsw_post->is_pinned() ? esc_html__( 'Extend pin', 'social-walls-for-hivepress' ) : esc_html__( 'Pin to the top', 'social-walls-for-hivepress' ); ?></span></a>
+			<a href="<?php echo esc_url( wp_nonce_url( hivepress()->router->get_url( 'hpsw_post_pin_page', [ 'hpsw_post_id' => $hpsw_id ] ), 'hpsw_pin_' . $hpsw_id ) ); ?>" class="hpsw-post__pin hpsw-post__owner-button hp-link"><i class="hp-icon fas fa-thumbtack"></i><span><?php echo $hpsw_post->is_pinned() ? esc_html__( 'Extend pin', 'social-walls-for-hivepress' ) : esc_html__( 'Pin to the top', 'social-walls-for-hivepress' ); ?></span></a>
 		<?php endif; ?>
 
 		<?php if ( 'publish' === $hpsw_status ) : ?>
-			<a href="<?php echo esc_url( $hpsw_wall->get_post_url( $hpsw_post ) ); ?>" class="hpsw-post__view hp-link"><i class="hp-icon fas fa-external-link-alt"></i><span><?php esc_html_e( 'View', 'social-walls-for-hivepress' ); ?></span></a>
+			<a href="<?php echo esc_url( $hpsw_wall->get_post_url( $hpsw_post ) ); ?>" class="hpsw-post__view hpsw-post__owner-button hp-link"><i class="hp-icon fas fa-external-link-alt"></i><span><?php esc_html_e( 'View', 'social-walls-for-hivepress' ); ?></span></a>
 		<?php endif; ?>
 
-		<a href="#<?php echo esc_attr( $hpsw_modal ); ?>" class="hpsw-post__delete hp-link"><i class="hp-icon fas fa-times"></i><span><?php echo esc_html( hivepress()->translator->get_string( 'delete' ) ); ?></span></a>
+		<a href="#<?php echo esc_attr( $hpsw_modal ); ?>" class="hpsw-post__delete hpsw-post__owner-button hp-link"><i class="hp-icon fas fa-times"></i><span><?php echo esc_html( hivepress()->translator->get_string( 'delete' ) ); ?></span></a>
 	</div>
 
 	<?php

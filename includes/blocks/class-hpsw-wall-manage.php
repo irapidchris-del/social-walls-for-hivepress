@@ -125,7 +125,7 @@ class Hpsw_Wall_Manage extends Block {
 		// The same cards as the Social Wall block, in its grid markup, so the site's own styling for
 		// the wall reaches them too; each card carries this Vendor's controls (the owner view).
 		$output .= '<div class="hpsw-wall hpsw-wall--owner">';
-		$output .= $wall->render_posts( array_map( 'absint', $posts->get_ids() ), 3, true );
+		$output .= $wall->render_posts( array_map( 'absint', $posts->get_ids() ), 2, true ); // Two per row: the account sidebar leaves too little width for three.
 		$output .= '</div>';
 		$output .= '</div>';
 
