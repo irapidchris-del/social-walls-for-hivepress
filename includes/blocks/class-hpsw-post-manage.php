@@ -14,8 +14,8 @@ use HivePress\Models;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * The owner's box in a post page's sidebar: Edit, Pin to the top when paid pinning is on, and Delete
- * with a confirmation pop-up.
+ * The owner's box in a post page's sidebar: Edit, Pin to the top when paid pinning is on, Delete
+ * with a confirmation pop-up, then Add New and My Wall for a viewer with a Vendor profile.
  *
  * Laid out like Additional Gallery's Manage Photo card on its photo page (a sidebar widget card with
  * a title, the main action as a full-width button, then the smaller actions each in their own
@@ -66,7 +66,7 @@ class Hpsw_Post_Manage extends Block {
 		$is_admin  = current_user_can( 'edit_others_posts' );
 
 		$output  = '<div class="hp-widget widget widget--sidebar hpsw-post-manage">';
-		$output .= '<h3 class="widget__title hp-section__title">' . esc_html__( 'Manage Post', 'social-walls-for-hivepress' ) . '</h3>';
+		$output .= '<h3 class="widget__title hp-section__title">' . esc_html__( 'Manage', 'social-walls-for-hivepress' ) . '</h3>';
 
 		// Edit. A post waiting for approval cannot be changed by its author until it is reviewed (the
 		// update route refuses it), so the box says so rather than offering a form that will refuse.
@@ -141,6 +141,17 @@ class Hpsw_Post_Manage extends Block {
 					],
 				]
 			) )->render();
+		}
+
+		// Shortcuts to the viewer's own wall: a new post, and the Wall page in their account. Only for
+		// a viewer with a Vendor profile, because both pages send anybody else straight to their
+		// account (controllers/class-hpsw-wall.php, redirect_wall_edit_page() and
+		// redirect_post_submit_page()), so an administrator without one would meet two dead links.
+		if ( $wall->get_current_vendor() ) {
+			$output .= '<div class="hpsw-post-manage__section hpsw-post-manage__links">';
+			$output .= '<a href="' . esc_url( hivepress()->router->get_url( 'hpsw_post_submit_page' ) ) . '" class="hpsw-post-manage__action hpsw-post-manage__new hp-link"><i class="hp-icon fas fa-plus"></i><span>' . esc_html__( 'Add New', 'social-walls-for-hivepress' ) . '</span></a>';
+			$output .= '<a href="' . esc_url( hivepress()->router->get_url( 'hpsw_wall_edit_page' ) ) . '" class="hpsw-post-manage__action hpsw-post-manage__wall hp-link"><i class="hp-icon fas fa-th-large"></i><span>' . esc_html__( 'My Wall', 'social-walls-for-hivepress' ) . '</span></a>';
+			$output .= '</div>';
 		}
 
 		$output .= '</div>';

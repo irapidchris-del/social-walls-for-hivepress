@@ -96,7 +96,8 @@
 	border-radius: 0.25rem;
 }
 
-.hpsw-post .hpsw-post__image a {
+.hpsw-post .hpsw-post__image a,
+.hpsw-post .hpsw-post__image .hpsw-post__image-frame {
 	display: block;
 }
 
@@ -776,6 +777,19 @@ a.hpsw-manage__new.button--primary:focus {
 
 .hpsw-post-manage__section .hp-meta {
 	margin: 0.375rem 0 0;
+}
+
+/* The black rule vanishes on a dark page, so the dark-mode plugin's class swaps in a light one. */
+html.darkify_dark_mode_enabled .hpsw-post-manage__section {
+	border-top-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Add New and My Wall share one ruled-off row, side by side, wrapping on a narrow sidebar. */
+.hpsw-post-manage__links {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.5rem 1.5rem;
 }
 
 /*

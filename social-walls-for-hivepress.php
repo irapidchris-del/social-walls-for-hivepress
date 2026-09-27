@@ -3,7 +3,7 @@
  * Plugin Name: Social Walls for HivePress
  * Plugin URI: https://github.com/irapidchris-del/social-walls-for-hivepress
  * Description: Gives every Vendor a wall for deals and updates, shows it on their profile, and adds an all-Vendors wall block with filters, likes and comments.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: ChrisB @ HivePress Community
  * Author URI: https://community.hivepress.io/u/chrisb/summary
  * Text Domain: social-walls-for-hivepress
@@ -22,7 +22,7 @@
 defined( 'ABSPATH' ) || exit;
 
 // Keep in step with the Version header above and the readme Stable tag on every release.
-define( 'HPSW_VERSION', '1.1.0' );
+define( 'HPSW_VERSION', '1.2.0' );
 
 // The main file, for asset paths and URLs that must not depend on the installed folder name.
 define( 'HPSW_FILE', __FILE__ );
@@ -37,7 +37,7 @@ Social_Walls\Updater\bootstrap( __FILE__ );
  *
  * HivePress seeds a field's `default` only when HivePress ITSELF is activated or updated
  * (hivepress/includes/components/class-admin.php:265, core 1.7.31), so a site that installs this
- * plugin later would otherwise have likes and follower emails switched off until the tab was first
+ * plugin later would otherwise have likes, follower emails and photo zoom switched off until the tab was first
  * saved. `add_option()` never overwrites, so an owner who switched either off keeps that choice when
  * the plugin is deactivated and activated again.
  *
@@ -53,6 +53,7 @@ function hpsw_activate() {
 	add_option( 'hp_hpsw_notify_followers', '1' );
 	add_option( 'hp_hpsw_enable_share', '1' );
 	add_option( 'hp_hpsw_show_radius', '1' );
+	add_option( 'hp_hpsw_photo_zoom', '1' );
 
 	delete_option( 'rewrite_rules' );
 

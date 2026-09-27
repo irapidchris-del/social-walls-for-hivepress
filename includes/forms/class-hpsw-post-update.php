@@ -76,13 +76,13 @@ class Hpsw_Post_Update extends Model_Form {
 			],
 
 			'coupon'      => [
-				'description' => trim( esc_html__( 'Optional. Shown on the Deal with a one-click copy button.', 'social-walls-for-hivepress' ) . ' ' . $this->get_coupon_hint() ),
+				'description' => trim( esc_html__( 'Shown on the Deal with a one-click copy button.', 'social-walls-for-hivepress' ) . ' ' . $this->get_coupon_hint() ),
 				'attributes'  => [ 'data-hpsw-deal' => 'true' ],
 				'_order'      => 50,
 			],
 
 			'expire_date' => [
-				'description' => esc_html__( 'Optional. The Deal is shown until the end of this day, then disappears from every wall by itself.', 'social-walls-for-hivepress' ),
+				'description' => esc_html__( 'The Deal is shown until the end of this day, then disappears from every wall by itself.', 'social-walls-for-hivepress' ),
 				'offset'      => 0,
 				'attributes'  => [ 'data-hpsw-deal' => 'true' ],
 				'_order'      => 60,
@@ -253,7 +253,7 @@ class Hpsw_Post_Update extends Model_Form {
 			'label'       => $label,
 			'description' => sprintf(
 				/* translators: %s: link to the Coupons page of the Vendor's account, labelled "Coupons". */
-				esc_html__( 'Optional. Shown on the Deal with a one-click copy button. Create a coupon under %s in your account and it will appear here.', 'social-walls-for-hivepress' ),
+				esc_html__( 'Shown on the Deal with a one-click copy button. Create a coupon under %s in your account and it will appear here.', 'social-walls-for-hivepress' ),
 				$link
 			),
 			'type'        => 'select',

@@ -4,7 +4,7 @@ Tags: hivepress, vendors, deals, coupons, wall
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,8 +20,9 @@ Features:
 * Ended Deals tidied for you. A Deal counts as ended once its end date has passed or once its coupon stops working at checkout (expired, used up, deleted or binned). Choose whether ended Deals are kept and marked as Ended (the default), hidden from visitors, or moved to the Bin once a day, with an optional grace period in days first. Updates are never touched.
 * A Wall page in every Vendor's account, to write, edit and delete posts, see how many likes and comments each has, and see how many posts are left this month.
 * Each Vendor's posts on their profile page, newest first, above or below their Listings, one, two or three to a row, with page numbers.
-* The Social Wall block (also a shortcode) for any page, showing posts from every Vendor, with filters for Deals or Updates, keywords, Listing category and location. With HivePress Geolocation active the location filter uses the same place search and radius as the Listing search; without it, it matches the addresses on file. With Geolocation Plus for HivePress as well, the place search uses its map provider and suggestions, and the filter also finds Vendors who travel to the searched place and Vendors whose own Location attributes are nearby. The distance box can be hidden, with a default radius of your choice.
-* A page for every post, with its photos in the HivePress slider and lightbox, the Vendor's card beside it, and the comments. The post's Vendor and administrators see a Manage Post box there, to edit, pin or delete it.
+* Optionally, posts on Listing pages too: each Listing shows its Vendor's posts for that Listing and those for all their Listings, above or below its description, and nothing at all when there are none. Off until you switch it on.
+* The Social Wall block (also a shortcode) for any page, showing posts from every Vendor, with filters for Deals or Updates, keywords, Listing category and location. The location filter checks each post: a post for one Listing shows when that Listing is within the chosen distance of the searched place (or in the chosen region), and a post for all of a Vendor's Listings shows when the Vendor's profile or any of their Listings is. With HivePress Geolocation active it uses the same place search as the Listing search and its default radius; without it, it matches the addresses on file. With Geolocation Plus for HivePress as well, the place search uses its map provider and suggestions, and the filter also finds Vendors who travel to the searched place and Listings or Vendors whose own Location attributes are nearby. The distance box can be hidden, with a default radius of your choice.
+* A page for every post, with its photos in the HivePress slider and lightbox (Photo Zoom, which can be switched off), the Vendor's card beside it, and the comments. The post's Vendor and administrators see a Manage box there, to edit, pin or delete it, with shortcuts to add a new post and to their Wall page.
 * A Share button on every post's page: Facebook, WhatsApp, Copy link and a QR code to scan with a phone camera, which can carry your own logo in the middle. On phones and tablets it opens the device's own share menu. The QR code is drawn in the visitor's browser by a small library bundled with the plugin.
 * Likes (a heart) and comments on every post, with one level of replies. Choose who can comment: anyone signed in, Vendors only, or nobody. Likes can be switched off.
 * Optional approval: new and changed posts wait as Pending until you publish them, and the Vendor is emailed either way.
@@ -73,6 +74,18 @@ A Deal ends once its end date has passed, or once the coupon it shows stops work
 
 The Grace Period setting lets an ended Deal stay as it is for a number of days before it is hidden or binned. Updates are never affected.
 
+= How does the location filter decide which posts to show? =
+
+Post by post. A Deal or Update linked to one Listing shows when that Listing is within the chosen distance of the place searched for, or in the chosen region. A post for all of a Vendor's Listings shows when the Vendor's own profile, or any of their published Listings, is. When the distance box is hidden, or a visitor leaves it empty, the wall uses its Default Search Radius, or HivePress Geolocation's own default radius if you leave that empty. With Geolocation Plus for HivePress, a Vendor whose service radius covers the searched place is found too.
+
+= Can posts show on Listing pages? =
+
+Yes. Under Settings, Social Walls, Display, set "Wall on Listing Pages" to above or below the description and choose the number of columns. Each Listing then shows its Vendor's live posts for that Listing, and those for all their Listings. A Listing with no such posts shows nothing extra.
+
+= Can I stop photos opening full size? =
+
+Yes. Untick "Photo Zoom" under Settings, Social Walls, Display. Photos then show as plain pictures that do nothing when clicked, on the wall cards and on each post's page.
+
 = The wall's location box shows no place suggestions. Why? =
 
 The suggestions come from the HivePress Geolocation extension's own scripts, which it loads on every page. If a speed plugin or a code snippet removes them (or the map library they need) from ordinary pages, the box on your wall page can no longer suggest places. Allow those scripts on the page that holds the Social Wall block. Until then the box still searches the text typed into it, and the locate icon still finds the visitor's position.
@@ -95,6 +108,13 @@ It is kept, so reinstalling brings everything back. To remove it all, tick "Dele
 * The Facebook and WhatsApp icons in the Share pop-up are from Font Awesome Free 7.1.0 by Fonticons, Inc., licensed under CC BY 4.0 (https://fontawesome.com/license/free).
 
 == Changelog ==
+
+= 1.2.0 =
+* Fixed: the Social Wall's location filter now checks each post, not each Vendor. A post for one Listing shows only when that Listing is within the chosen distance or region, and a post for all of a Vendor's Listings when the Vendor or any of their Listings is. Before, one nearby Listing brought in every post the Vendor had made.
+* Added: Photo Zoom setting under Settings, Social Walls, Display. On by default; untick it so post photos no longer open full size on a post's page or act as links on wall cards.
+* Added: Wall on Listing Pages setting, Hidden by default. Shows a Listing's posts, and its Vendor's posts for all their Listings, above or below the description, in one, two or three columns.
+* Changed: the box beside a post for its owner is now titled Manage, with Add New and My Wall links under Edit and Delete.
+* Changed: the Deal form's Coupon Code and Ends On hints no longer start with "Optional.", which the labels already say.
 
 = 1.1.0 =
 * Added: Ended Deals setting under Settings, Social Walls. Choose whether a Deal that has ended is kept and marked as Ended (the default, so nothing changes until you choose otherwise), hidden from visitors, or moved to the Bin once a day, with an optional grace period in days.

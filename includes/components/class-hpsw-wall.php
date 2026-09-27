@@ -92,6 +92,9 @@ final class Hpsw_Wall extends Component {
 		// The wall section on Vendor pages.
 		add_filter( 'hivepress/v1/templates/vendor_view_page', [ $this, 'add_vendor_wall' ] );
 
+		// The wall section on Listing pages, when the owner switches it on.
+		add_filter( 'hivepress/v1/templates/listing_view_page', [ $this, 'add_listing_wall' ] );
+
 		// Memberships: per-plan posting rights and allowance.
 		add_filter( 'hivepress/v1/models/membership_plan', [ $this, 'add_plan_fields' ] );
 		add_filter( 'hivepress/v1/meta_boxes/membership_plan_page_restrictions', [ $this, 'add_plan_restrictions' ] );
@@ -776,6 +779,77 @@ final class Hpsw_Wall extends Component {
 				],
 			]
 		);
+	}
+
+	/**
+	 * Adds the wall section to Listing pages, when the owner switches it on.
+	 *
+	 * Core's Listing page ends `page_content` with the description at order 70
+	 * (templates/class-listing-view-page.php, core 1.7.31). Siblings on that parent: Tags 70,
+	 * Additional Gallery 85, Reviews 100 (each read from its own alter_listing_view_page()). 65 sits
+	 * just above the description and 90 below it, before the reviews, so neither ties with anything.
+	 * The section is `optional`, so a Listing with no posts shows nothing at all.
+	 *
+	 * @param array $template Template arguments.
+	 * @return array
+	 */
+	public function add_listing_wall( $template ) {
+		$position = $this->get_listing_position();
+
+		if ( 'hidden' === $position ) {
+			return $template;
+		}
+
+		return hp\merge_trees(
+			$template,
+			[
+				'blocks' => [
+					'page_content' => [
+						'blocks' => [
+							'hpsw_listing_wall_section' => [
+								'type'       => 'section',
+								'title'      => esc_html__( 'Deals and Updates', 'social-walls-for-hivepress' ),
+								'optional'   => true,
+								'_order'     => 'above' === $position ? 65 : 90,
+
+								'attributes' => [
+									'class' => [ 'hpsw-section' ],
+									'id'    => 'wall',
+								],
+
+								'blocks'     => [
+									'hpsw_listing_wall' => [
+										'type'   => 'hpsw_wall',
+										'mode'   => 'listing',
+										'_label' => esc_html__( 'Wall', 'social-walls-for-hivepress' ),
+										'_order' => 10,
+									],
+								],
+							],
+						],
+					],
+				],
+			]
+		);
+	}
+
+	/**
+	 * Gets where the wall sits on Listing pages: below, above or hidden. Hidden until the owner
+	 * chooses otherwise.
+	 *
+	 * @return string
+	 */
+	public function get_listing_position() {
+		return hpsw_get_choice_option( 'hpsw_listing_position', [ 'below', 'above', 'hidden' ], 'hidden' );
+	}
+
+	/**
+	 * Checks whether post photos open full size when clicked. On until the owner unticks it.
+	 *
+	 * @return bool
+	 */
+	public function is_photo_zoom_enabled() {
+		return (bool) hpsw_get_option( 'hpsw_photo_zoom', '1' );
 	}
 
 	/*
@@ -2417,6 +2491,8 @@ final class Hpsw_Wall extends Component {
 	 *     Query arguments.
 	 *
 	 *     @type int[]|null $vendor_ids Only these Vendors; null for all, an empty array for none.
+	 *     @type int[]|null $post_ids   Only these posts; null for all, an empty array for none.
+	 *     @type int        $listing_id Only posts for this Listing or for all the Vendor's Listings.
 	 *     @type string     $type       deal, update or '' for both.
 	 *     @type string     $keyword    Words to search for.
 	 *     @type int        $number     Posts per page.
@@ -2428,6 +2504,8 @@ final class Hpsw_Wall extends Component {
 		$args = array_merge(
 			[
 				'vendor_ids' => null,
+				'post_ids'   => null,
+				'listing_id' => 0,
 				'type'       => '',
 				'keyword'    => '',
 				'number'     => 10,
@@ -2442,7 +2520,7 @@ final class Hpsw_Wall extends Component {
 			'total' => 0,
 		];
 
-		if ( is_array( $args['vendor_ids'] ) && ! $args['vendor_ids'] ) {
+		if ( ( is_array( $args['vendor_ids'] ) && ! $args['vendor_ids'] ) || ( is_array( $args['post_ids'] ) && ! $args['post_ids'] ) ) {
 			return $empty;
 		}
 
@@ -2471,6 +2549,27 @@ final class Hpsw_Wall extends Component {
 			];
 		}
 
+		// A Listing page: posts for this Listing, and posts for all the Vendor's Listings, whose meta
+		// HivePress deletes when saved empty (models/class-post.php:177-182, core 1.7.31).
+		$listing_id = absint( $args['listing_id'] );
+
+		if ( $listing_id ) {
+			$meta_query['listing'] = [
+				'relation' => 'OR',
+
+				[
+					'key'     => 'hp_listing',
+					'compare' => 'NOT EXISTS',
+				],
+
+				[
+					'key'     => 'hp_listing',
+					'value'   => [ (string) $listing_id, '', '0' ],
+					'compare' => 'IN',
+				],
+			];
+		}
+
 		$query_args = [
 			'post_type'           => self::POST_TYPE,
 			'post_status'         => 'publish',
@@ -2493,6 +2592,11 @@ final class Hpsw_Wall extends Component {
 
 		if ( $hidden ) {
 			$query_args['post__not_in'] = $hidden;
+		}
+
+		// A location filter, already worked out post by post (get_location_post_ids()).
+		if ( is_array( $args['post_ids'] ) ) {
+			$query_args['post__in'] = array_map( 'absint', $args['post_ids'] );
 		}
 
 		if ( is_array( $args['vendor_ids'] ) ) {
@@ -2557,70 +2661,147 @@ final class Hpsw_Wall extends Component {
 	}
 
 	/**
-	 * Works out which Vendors a wall filter allows.
+	 * Works out which Vendors a wall's category filter allows.
 	 *
-	 * Category and location are properties of a Vendor, not of a single post: a Vendor matches a
-	 * category when they have a published Listing in it, and a location when their own profile, or
-	 * any of their published Listings, is there. That keeps every post findable whether or not it
-	 * links a Listing, and stays true as a Vendor's Listings change, with nothing copied onto posts.
+	 * A category is a property of a Vendor, not of a single post: a Vendor matches when they have a
+	 * published Listing in it. Location is matched post by post instead (get_location_post_ids()).
 	 *
 	 * @param array $filters {
 	 *     Filter values.
 	 *
-	 *     @type int    $category Listing category ID.
+	 *     @type int $category Listing category ID.
+	 * }
+	 * @return int[]|null Vendor IDs, or null when nothing restricts the Vendors.
+	 */
+	public function get_filter_vendor_ids( $filters ) {
+		$category = absint( hp\get_array_value( $filters, 'category' ) );
+
+		if ( ! $category ) {
+			return null;
+		}
+
+		return $this->get_listing_vendor_ids(
+			[
+				'tax_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- the category filter itself.
+					[
+						'taxonomy'         => 'hp_listing_category',
+						'terms'            => [ $category ],
+						'include_children' => true,
+					],
+				],
+			]
+		);
+	}
+
+	/**
+	 * Gets the wall posts a location filter allows.
+	 *
+	 * Matched post by post, because a Deal belongs to a place, not just to a Vendor. Up to 1.1.0 a
+	 * Vendor matched when any of their Listings was near, and then every post they had ever made
+	 * showed, so a Deal for a Listing in another town passed the filter too. Now:
+	 *
+	 * - A post that applies to one Listing matches when that Listing is near (or in the region).
+	 * - A post that applies to all the Vendor's Listings matches when the Vendor's own profile, or any
+	 *   of their published Listings, is near (or in the region).
+	 *
+	 * @param array $filters {
+	 *     Filter values.
+	 *
 	 *     @type string $location Location text.
 	 *     @type float  $latitude Latitude, when a place was picked.
 	 *     @type float  $longitude Longitude, when a place was picked.
 	 *     @type float  $radius Radius in the site's units.
 	 *     @type string $region Region code, when regions are generated.
 	 * }
-	 * @return int[]|null Vendor IDs, or null when nothing restricts the Vendors.
+	 * @return int[]|null Post IDs, or null when no location was given.
 	 */
-	public function get_filter_vendor_ids( $filters ) {
-		$vendor_ids = null;
+	public function get_location_post_ids( $filters ) {
+		$matches = $this->get_location_matches( $filters );
 
-		// Category.
-		$category = absint( hp\get_array_value( $filters, 'category' ) );
+		if ( ! is_array( $matches ) ) {
+			return null;
+		}
 
-		if ( $category ) {
-			$vendor_ids = $this->get_listing_vendor_ids(
+		$ids = [];
+
+		// phpcs:disable WordPress.DB.SlowDBQuery -- the location filter itself; runs only when a visitor sets one, and returns IDs only.
+		// Posts for one Listing: the Listing is in the place.
+		if ( $matches['listings'] ) {
+			$ids = get_posts(
 				[
-					'tax_query' => [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- the category filter itself.
+					'post_type'      => self::POST_TYPE,
+					'post_status'    => 'publish',
+					'posts_per_page' => -1,
+					'fields'         => 'ids',
+					'no_found_rows'  => true,
+
+					'meta_query'     => [
 						[
-							'taxonomy'         => 'hp_listing_category',
-							'terms'            => [ $category ],
-							'include_children' => true,
+							'key'     => 'hp_listing',
+							'value'   => array_map( 'strval', $matches['listings'] ),
+							'compare' => 'IN',
 						],
 					],
 				]
 			);
 		}
 
-		// Location.
-		$location_ids = $this->get_location_vendor_ids( $filters );
+		// Posts for all of a Vendor's Listings: the Vendor, or one of their Listings, is in the place.
+		// HivePress deletes the meta when "All my Listings" is saved (models/class-post.php:177-182,
+		// core 1.7.31); an empty or zero value is matched too, for posts saved any other way.
+		if ( $matches['vendors'] ) {
+			$ids = array_merge(
+				$ids,
+				get_posts(
+					[
+						'post_type'       => self::POST_TYPE,
+						'post_status'     => 'publish',
+						'post_parent__in' => $matches['vendors'],
+						'posts_per_page'  => -1,
+						'fields'          => 'ids',
+						'no_found_rows'   => true,
 
-		if ( is_array( $location_ids ) ) {
-			$vendor_ids = is_array( $vendor_ids ) ? array_values( array_intersect( $vendor_ids, $location_ids ) ) : $location_ids;
+						'meta_query'      => [
+							'relation' => 'OR',
+
+							[
+								'key'     => 'hp_listing',
+								'compare' => 'NOT EXISTS',
+							],
+
+							[
+								'key'     => 'hp_listing',
+								'value'   => [ '', '0' ],
+								'compare' => 'IN',
+							],
+						],
+					]
+				)
+			);
 		}
+		// phpcs:enable
 
-		return $vendor_ids;
+		return array_values( array_unique( array_map( 'absint', $ids ) ) );
 	}
 
 	/**
-	 * Gets the Vendors matching a location filter.
+	 * Gets the Listings and Vendors a location filter reaches.
 	 *
-	 * With HivePress Geolocation active and a place picked, this is the same bounding box the
-	 * extension itself searches with: radius over 110.574 km per degree of latitude, and over
-	 * 111.320 x cos(latitude) per degree of longitude (hivepress-geolocation/includes/fields/
-	 * class-latitude.php:87-96, class-longitude.php:90-106), so a wall and a Listing search agree
-	 * about what "within 15 km" means. A picked region is matched by its code, as the extension does
-	 * (components/class-geolocation.php:565-600). Without Geolocation, or with typed text that was
-	 * never matched to a place, the text is looked for in the stored addresses.
+	 * With HivePress Geolocation active and a place picked, a Listing or Vendor matches when its
+	 * coordinates are within the radius of that place, measured as a true distance rather than the
+	 * square box Geolocation's own search uses (hivepress-geolocation/includes/fields/
+	 * class-latitude.php:84-98, class-longitude.php:84-106), so a corner of the box never counts as
+	 * "within 15 km". A picked region is matched by its code, as the extension does
+	 * (components/class-geolocation.php:565-615), and then the coordinates are not used, which is also
+	 * what the extension does. Without Geolocation, or with typed text that was never matched to a
+	 * place, the text is looked for in the stored addresses.
 	 *
 	 * @param array $filters Filter values.
-	 * @return int[]|null
+	 * @return array{listings: int[], vendors: int[]}|null Matching Listing IDs, and the Vendors whose
+	 *                                                     all-Listings posts match; null when no
+	 *                                                     location was given.
 	 */
-	protected function get_location_vendor_ids( $filters ) {
+	protected function get_location_matches( $filters ) {
 		// phpcs:disable WordPress.DB.SlowDBQuery -- every meta and tax clause below IS the location filter a visitor asked for; they run only when one is set, and return IDs only.
 		$location  = trim( (string) hp\get_array_value( $filters, 'location' ) );
 		$latitude  = hp\get_array_value( $filters, 'latitude' );
@@ -2631,14 +2812,17 @@ final class Hpsw_Wall extends Component {
 			return null;
 		}
 
-		// A region picked from the suggestions.
-		if ( '' !== $region && get_option( 'hp_geolocation_generate_regions' ) ) {
-			$ids = [];
+		// Listing ID => Vendor ID, and Vendor IDs matched by their own profile.
+		$listings = [];
+		$vendors  = [];
 
+		if ( '' !== $region && get_option( 'hp_geolocation_generate_regions' ) ) {
+
+			// A region picked from the suggestions.
 			foreach ( [
-				'hp_listing_region' => 'listing',
-				'hp_vendor_region'  => 'vendor',
-			] as $taxonomy => $model ) {
+				'hp_listing_region' => 'hp_listing',
+				'hp_vendor_region'  => 'hp_vendor',
+			] as $taxonomy => $post_type ) {
 				if ( ! taxonomy_exists( $taxonomy ) ) {
 					continue;
 				}
@@ -2658,77 +2842,125 @@ final class Hpsw_Wall extends Component {
 					continue;
 				}
 
-				$tax_query = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query -- the region filter itself.
+				$found = $this->get_post_parents(
+					$post_type,
 					[
-						'taxonomy' => $taxonomy,
-						'terms'    => array_map( 'absint', $term_ids ),
-					],
-				];
+						'tax_query' => [
+							[
+								'taxonomy' => $taxonomy,
+								'terms'    => array_map( 'absint', $term_ids ),
+							],
+						],
+					]
+				);
 
-				if ( 'listing' === $model ) {
-					$ids = array_merge( $ids, $this->get_listing_vendor_ids( [ 'tax_query' => $tax_query ] ) );
+				if ( 'hp_listing' === $post_type ) {
+					$listings += $found;
 				} else {
-					$ids = array_merge( $ids, $this->get_vendor_ids( [ 'tax_query' => $tax_query ] ) );
+					$vendors = array_merge( $vendors, array_keys( $found ) );
 				}
 			}
+		} elseif ( is_numeric( $latitude ) && is_numeric( $longitude ) ) {
 
-			return array_values( array_unique( $ids ) );
-		}
-
-		// A place picked from the suggestions: a radius search.
-		if ( is_numeric( $latitude ) && is_numeric( $longitude ) ) {
+			// A place picked from the suggestions: a radius search.
 			$latitude  = max( -90, min( 90, (float) $latitude ) );
 			$longitude = max( -180, min( 180, (float) $longitude ) );
 			$radius    = $this->get_radius_km( hp\get_array_value( $filters, 'radius' ) );
 
-			$lat_delta = $radius / 110.574;
-			$lng_delta = $radius / max( 0.01, 111.320 * cos( deg2rad( $latitude ) ) );
+			$listings += $this->get_nearby_posts( 'hp_listing', 'hp_latitude', 'hp_longitude', $latitude, $longitude, $radius );
+			$vendors   = array_keys( $this->get_nearby_posts( 'hp_vendor', 'hp_latitude', 'hp_longitude', $latitude, $longitude, $radius ) );
 
-			$meta_query = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- the radius filter itself, the same clauses Geolocation builds.
-				[
-					'key'     => 'hp_latitude',
-					'value'   => [ $latitude - $lat_delta, $latitude + $lat_delta ],
-					'compare' => 'BETWEEN',
-					'type'    => 'DECIMAL(10,6)',
-				],
+			$extra = $this->get_geolocation_plus_matches( $latitude, $longitude, $radius );
 
-				[
-					'key'     => 'hp_longitude',
-					'value'   => [ $longitude - $lng_delta, $longitude + $lng_delta ],
-					'compare' => 'BETWEEN',
-					'type'    => 'DECIMAL(10,6)',
+			$listings += $extra['listings'];
+			$vendors   = array_merge( $vendors, $extra['vendors'] );
+		} else {
+
+			// Plain text, matched against the stored addresses.
+			$args = [
+				'meta_query' => [
+					[
+						'key'     => 'hp_location',
+						'value'   => $location,
+						'compare' => 'LIKE',
+					],
 				],
 			];
 
-			return array_values(
-				array_unique(
-					array_merge(
-						$this->get_listing_vendor_ids( [ 'meta_query' => $meta_query ] ),
-						$this->get_vendor_ids( [ 'meta_query' => $meta_query ] ),
-						$this->get_geolocation_plus_vendor_ids( $latitude, $longitude, $lat_delta, $lng_delta )
-					)
-				)
-			);
+			$listings += $this->get_post_parents( 'hp_listing', $args );
+			$vendors   = array_keys( $this->get_post_parents( 'hp_vendor', $args ) );
 		}
+		// phpcs:enable
 
-		// Plain text, matched against the stored addresses.
-		$meta_query = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- the location text filter itself.
-			[
-				'key'     => 'hp_location',
-				'value'   => $location,
-				'compare' => 'LIKE',
-			],
+		// A Vendor with a Listing in the place matches for their all-Listings posts too.
+		$vendors = array_merge( $vendors, array_values( $listings ) );
+
+		return [
+			'listings' => array_values( array_filter( array_map( 'absint', array_keys( $listings ) ) ) ),
+			'vendors'  => array_values( array_unique( array_filter( array_map( 'absint', $vendors ) ) ) ),
 		];
+	}
 
-		return array_values(
-			array_unique(
-				array_merge(
-					$this->get_listing_vendor_ids( [ 'meta_query' => $meta_query ] ),
-					$this->get_vendor_ids( [ 'meta_query' => $meta_query ] )
-				)
+	/**
+	 * Gets the published posts of one type whose coordinates are within a radius of a point.
+	 *
+	 * One query for the lot. The latitude and longitude ranges are a cheap first cut before the
+	 * distance itself, which uses the spherical law of cosines, the same formula Geolocation Plus
+	 * uses for service areas (components/class-hpgp-service-area.php, get_travelling_ids()). The
+	 * longitude range is skipped when it would wrap past 180 degrees, where it could not be written as
+	 * one BETWEEN; the distance test alone then decides.
+	 *
+	 * @param string $post_type Post type, hp_listing or hp_vendor.
+	 * @param string $lat_key Latitude meta key.
+	 * @param string $lng_key Longitude meta key.
+	 * @param float  $latitude Latitude of the place searched for.
+	 * @param float  $longitude Longitude of the place searched for.
+	 * @param float  $radius Radius in kilometres.
+	 * @return array<int, int> Post ID => parent ID (a Listing's Vendor; 0 for a Vendor).
+	 */
+	protected function get_nearby_posts( $post_type, $lat_key, $lng_key, $latitude, $longitude, $radius ) {
+		global $wpdb;
+
+		$lat_delta = $radius / 110.574;
+		$lng_delta = $radius / max( 0.01, 111.320 * cos( deg2rad( $latitude ) ) );
+		$lng_range = ( $longitude - $lng_delta ) >= -180 && ( $longitude + $lng_delta ) <= 180 ? 1 : 0;
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- a per-search distance test no WordPress API can express, and nothing to reuse across searches.
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT p.ID, p.post_parent FROM {$wpdb->posts} p
+				INNER JOIN {$wpdb->postmeta} la ON la.post_id = p.ID AND la.meta_key = %s
+				INNER JOIN {$wpdb->postmeta} lo ON lo.post_id = p.ID AND lo.meta_key = %s
+				WHERE p.post_type = %s AND p.post_status = 'publish'
+				AND la.meta_value <> '' AND lo.meta_value <> ''
+				AND CAST(la.meta_value AS DECIMAL(10,6)) BETWEEN %f AND %f
+				AND ( 0 = %d OR CAST(lo.meta_value AS DECIMAL(10,6)) BETWEEN %f AND %f )
+				AND 6371 * ACOS( LEAST( 1, GREATEST( -1,
+					COS( RADIANS( %f ) ) * COS( RADIANS( la.meta_value ) ) * COS( RADIANS( lo.meta_value ) - RADIANS( %f ) )
+					+ SIN( RADIANS( %f ) ) * SIN( RADIANS( la.meta_value ) )
+				) ) ) <= %f",
+				$lat_key,
+				$lng_key,
+				$post_type,
+				$latitude - $lat_delta,
+				$latitude + $lat_delta,
+				$lng_range,
+				$longitude - $lng_delta,
+				$longitude + $lng_delta,
+				$latitude,
+				$longitude,
+				$latitude,
+				$radius
 			)
 		);
-		// phpcs:enable
+
+		$found = [];
+
+		foreach ( (array) $rows as $row ) {
+			$found[ absint( $row->ID ) ] = absint( $row->post_parent );
+		}
+
+		return $found;
 	}
 
 	/**
@@ -2737,7 +2969,7 @@ final class Hpsw_Wall extends Component {
 	 * .php), so it never stands in for it: with both active, the wall's place box is still the
 	 * extension's Location field, which Geolocation Plus's script takes over with its own provider and
 	 * suggestion list (assets/js/common.js, hivepress.initGeolocation()), and this plugin adds the
-	 * matches only Geolocation Plus knows about (get_geolocation_plus_vendor_ids()).
+	 * matches only Geolocation Plus knows about (get_geolocation_plus_matches()).
 	 *
 	 * @return bool
 	 */
@@ -2746,82 +2978,72 @@ final class Hpsw_Wall extends Component {
 	}
 
 	/**
-	 * Gets the Vendors that Geolocation Plus places within a radius search, beyond the Listings and
-	 * Vendor profiles whose own coordinates are inside the box.
+	 * Gets the Listings and Vendors that Geolocation Plus places within a radius search, beyond the
+	 * built-in coordinates.
 	 *
 	 * Two sources, both read from Geolocation Plus 1.3.1:
 	 *
-	 * 1. Service areas. A Vendor who travels (a Service Radius on their profile) is found from
-	 *    anywhere inside their radius, which is how its own Listing search behaves. Geolocation Plus
-	 *    widens that search from a `posts_where` filter (components/class-hpgp-service-area.php,
-	 *    widen_location_filter()), and get_posts() suppresses filters, so the wall's own queries
-	 *    never reach it: the same public get_travelling_ids() it uses is called here instead, for
-	 *    Listings (mapped to their Vendors) and for Vendors.
+	 * 1. Service areas. A Vendor who travels (a Service Radius on their profile, post meta
+	 *    `hp_hpgp_service_radius`) is found from anywhere inside their radius, which is how its own
+	 *    Listing search behaves. Geolocation Plus widens that search from a `posts_where` filter
+	 *    (components/class-hpgp-service-area.php, widen_location_filter()), which the wall's own
+	 *    queries never reach, so the same public get_travelling_ids() it uses is called here instead:
+	 *    the travelling Listings match directly (it already honours the owner's choice of which
+	 *    Listings travel), and the travelling Vendors match for their all-Listings posts.
 	 * 2. Its custom Location attributes on Vendors and Listings, such as a "Studio Address". Each
 	 *    stores its coordinates in two more attributes named `{name}_latitude` and `{name}_longitude`
 	 *    (components/class-hpgp-geolocation.php, add_location_attributes()), saved as post meta with
-	 *    core's `hp_` prefix. On a site where Vendor profiles have no built-in location, that
-	 *    attribute IS the profile's location, so it counts as "the profile is within the radius".
-	 *    The same box as the built-in coordinates, so both agree about what "within" means.
+	 *    core's `hp_` prefix, and measured the same way as the built-in ones.
 	 *
 	 * @param float $latitude Latitude of the place searched for.
 	 * @param float $longitude Longitude of the place searched for.
-	 * @param float $lat_delta Half the box height in degrees.
-	 * @param float $lng_delta Half the box width in degrees.
-	 * @return int[]
+	 * @param float $radius Radius in kilometres.
+	 * @return array{listings: array<int, int>, vendors: int[]}
 	 */
-	protected function get_geolocation_plus_vendor_ids( $latitude, $longitude, $lat_delta, $lng_delta ) {
-		if ( ! $this->is_geolocation_plus_active() ) {
-			return [];
-		}
+	protected function get_geolocation_plus_matches( $latitude, $longitude, $radius ) {
+		$matches = [
+			'listings' => [],
+			'vendors'  => [],
+		];
 
-		$ids = [];
+		if ( ! $this->is_geolocation_plus_active() ) {
+			return $matches;
+		}
 
 		// 1. Service areas.
 		$area = hivepress()->hpgp_service_area;
 
 		if ( $area instanceof \HivePress\Components\Hpgp_Service_Area && $area->is_enabled() ) {
-			foreach ( $area->get_travelling_ids( 'listing', $latitude, $longitude ) as $listing_id ) {
-				$vendor_id = absint( wp_get_post_parent_id( $listing_id ) );
+			$listing_ids = array_filter( array_map( 'absint', (array) $area->get_travelling_ids( 'listing', $latitude, $longitude ) ) );
 
-				if ( $vendor_id ) {
-					$ids[] = $vendor_id;
-				}
+			if ( $listing_ids ) {
+				$matches['listings'] += $this->get_post_parents( 'hp_listing', [ 'post__in' => $listing_ids ] );
 			}
 
-			$ids = array_merge( $ids, array_map( 'absint', $area->get_travelling_ids( 'vendor', $latitude, $longitude ) ) );
+			$matches['vendors'] = array_map( 'absint', (array) $area->get_travelling_ids( 'vendor', $latitude, $longitude ) );
 		}
 
 		// 2. Custom Location attributes.
-		foreach ( [ 'listing', 'vendor' ] as $model ) {
+		foreach ( [
+			'listing' => 'hp_listing',
+			'vendor'  => 'hp_vendor',
+		] as $model => $post_type ) {
 			foreach ( (array) hivepress()->attribute->get_attributes( $model ) as $name => $attribute ) {
 				if ( 'hpgp_location' !== hp\get_array_value( (array) hp\get_array_value( $attribute, 'edit_field', [] ), 'type' ) ) {
 					continue;
 				}
 
-				$meta_query = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- the radius filter itself, on the attribute's own coordinates.
-					[
-						'key'     => 'hp_' . $name . '_latitude',
-						'value'   => [ $latitude - $lat_delta, $latitude + $lat_delta ],
-						'compare' => 'BETWEEN',
-						'type'    => 'DECIMAL(10,6)',
-					],
+				$found = $this->get_nearby_posts( $post_type, 'hp_' . $name . '_latitude', 'hp_' . $name . '_longitude', $latitude, $longitude, $radius );
 
-					[
-						'key'     => 'hp_' . $name . '_longitude',
-						'value'   => [ $longitude - $lng_delta, $longitude + $lng_delta ],
-						'compare' => 'BETWEEN',
-						'type'    => 'DECIMAL(10,6)',
-					],
-				];
-
-				$query_args = [ 'meta_query' => $meta_query ]; // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- as above.
-
-				$ids = array_merge( $ids, 'listing' === $model ? $this->get_listing_vendor_ids( $query_args ) : $this->get_vendor_ids( $query_args ) );
+				if ( 'hp_listing' === $post_type ) {
+					$matches['listings'] += $found;
+				} else {
+					$matches['vendors'] = array_merge( $matches['vendors'], array_keys( $found ) );
+				}
 			}
 		}
 
-		return array_values( array_unique( array_filter( $ids ) ) );
+		return $matches;
 	}
 
 	/**
@@ -2885,54 +3107,42 @@ final class Hpsw_Wall extends Component {
 	 * @return int[]
 	 */
 	protected function get_listing_vendor_ids( $args ) {
-		$listing_ids = get_posts(
+		return array_values( array_unique( array_filter( $this->get_post_parents( 'hp_listing', $args ) ) ) );
+	}
+
+	/**
+	 * Gets the published posts of one type matching some query arguments, with their parents.
+	 *
+	 * WP_Query's `id=>parent` field returns each post's parent in the same query, as an array of
+	 * parent IDs keyed by post ID, not post objects (wp-includes/class-wp-query.php, get_posts()), so
+	 * a Listing's Vendor (its `post_parent`, hivepress/includes/models/class-listing.php) never costs
+	 * a query per Listing.
+	 *
+	 * @param string $post_type Post type.
+	 * @param array  $args Extra WP_Query arguments.
+	 * @return array<int, int> Post ID => parent ID.
+	 */
+	protected function get_post_parents( $post_type, $args ) {
+		$posts = get_posts(
 			array_merge(
 				[
-					'post_type'      => 'hp_listing',
+					'post_type'      => $post_type,
 					'post_status'    => 'publish',
 					'posts_per_page' => -1,
-					'fields'         => 'ids',
+					'fields'         => 'id=>parent',
 					'no_found_rows'  => true,
 				],
 				$args
 			)
 		);
 
-		$vendor_ids = [];
+		$parents = [];
 
-		foreach ( $listing_ids as $listing_id ) {
-			$vendor_id = wp_get_post_parent_id( $listing_id );
-
-			if ( $vendor_id ) {
-				$vendor_ids[ $vendor_id ] = $vendor_id;
-			}
+		foreach ( $posts as $post_id => $parent_id ) {
+			$parents[ absint( $post_id ) ] = absint( $parent_id );
 		}
 
-		return array_values( array_map( 'absint', $vendor_ids ) );
-	}
-
-	/**
-	 * Gets the published Vendors matching some query arguments.
-	 *
-	 * @param array $args Extra WP_Query arguments.
-	 * @return int[]
-	 */
-	protected function get_vendor_ids( $args ) {
-		return array_map(
-			'absint',
-			get_posts(
-				array_merge(
-					[
-						'post_type'      => 'hp_vendor',
-						'post_status'    => 'publish',
-						'posts_per_page' => -1,
-						'fields'         => 'ids',
-						'no_found_rows'  => true,
-					],
-					$args
-				)
-			)
-		);
+		return $parents;
 	}
 
 	/**
@@ -3129,7 +3339,8 @@ final class Hpsw_Wall extends Component {
 	/**
 	 * Registers the front-end assets, and enqueues them where a wall can appear.
 	 *
-	 * Not on every page: only this plugin's own pages, Vendor pages, and any page whose content
+	 * Not on every page: only this plugin's own pages, Vendor pages, Listing pages while they show a
+	 * wall, and any page whose content
 	 * carries the Social Wall block or its shortcode. A wall placed somewhere else (a widget, a
 	 * theme template) still gets them, because the block enqueues them itself as it renders, which
 	 * WordPress then prints in the footer.
@@ -3190,7 +3401,7 @@ final class Hpsw_Wall extends Component {
 		);
 
 		$route = (string) hivepress()->router->get_current_route_name();
-		$load  = 0 === strpos( $route, 'hpsw_' ) || 'vendor_view_page' === $route;
+		$load  = 0 === strpos( $route, 'hpsw_' ) || 'vendor_view_page' === $route || ( 'listing_view_page' === $route && 'hidden' !== $this->get_listing_position() );
 
 		if ( ! $load && is_singular() ) {
 			$content = (string) get_post_field( 'post_content', get_queried_object_id() );

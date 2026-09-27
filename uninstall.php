@@ -172,7 +172,8 @@ function hpsw_uninstall_site() {
 	 * The sweep covers every setting on the tab, including those added in 1.0.2: hp_hpsw_enable_share,
 	 * hp_hpsw_share_logo (an attachment ID only; the image stays in the Media Library),
 	 * hp_hpsw_show_radius and hp_hpsw_default_radius, and the one added in 1.0.3,
-	 * hp_hpsw_coupon_color. Checked against the settings config.
+	 * hp_hpsw_coupon_color, and those added in 1.2.0: hp_hpsw_photo_zoom, hp_hpsw_listing_position and
+	 * hp_hpsw_listing_columns. Checked against the settings config.
 	 */
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- one-off cleanup of wildcard option names, which no WordPress API can enumerate.
 	$option_names = $wpdb->get_col( $wpdb->prepare( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s AND option_name != %s", $wpdb->esc_like( 'hp_hpsw_' ) . '%', 'hp_hpsw_delete_data' ) );

@@ -59,11 +59,11 @@ return [
 
 			'display'       => [
 				'title'       => esc_html__( 'Display', 'social-walls-for-hivepress' ),
-				'description' => esc_html__( 'Each Vendor\'s own posts appear on their profile page. To show posts from every Vendor, add the Social Wall block to any page in the block editor, or paste the shortcode [hivepress_hpsw_wall] into it. Deals disappear from every wall by themselves after their end date.', 'social-walls-for-hivepress' ),
+				'description' => esc_html__( 'Each Vendor\'s own posts appear on their profile page, and can appear on their Listing pages too. To show posts from every Vendor, add the Social Wall block to any page in the block editor, or paste the shortcode [hivepress_hpsw_wall] into it. Deals disappear from every wall by themselves after their end date.', 'social-walls-for-hivepress' ),
 				'_order'      => 20,
 
 				'fields'      => [
-					'hpsw_vendor_position' => [
+					'hpsw_vendor_position'  => [
 						'label'       => esc_html__( 'Wall on Vendor Pages', 'social-walls-for-hivepress' ),
 						'description' => esc_html__( 'Where a Vendor\'s wall sits on their profile page, relative to their Listings. Choose Hidden to show walls only through the Social Wall block.', 'social-walls-for-hivepress' ),
 						'type'        => 'radio',
@@ -77,7 +77,7 @@ return [
 						],
 					],
 
-					'hpsw_vendor_columns'  => [
+					'hpsw_vendor_columns'   => [
 						'label'       => esc_html__( 'Columns on Vendor Pages', 'social-walls-for-hivepress' ),
 						'description' => esc_html__( 'How many posts sit side by side on a Vendor\'s profile, like the columns of a Listings block. Two suits most themes, because the profile\'s main column is narrower than a full page. Phones always show one post per row. The Social Wall block has its own number in the block settings.', 'social-walls-for-hivepress' ),
 						'type'        => 'radio',
@@ -91,9 +91,37 @@ return [
 						],
 					],
 
-					'hpsw_per_page'        => [
+					'hpsw_listing_position' => [
+						'label'       => esc_html__( 'Wall on Listing Pages', 'social-walls-for-hivepress' ),
+						'description' => esc_html__( 'Where posts sit on a Listing\'s page, relative to its description. A Listing shows its Vendor\'s live posts for that Listing and those for all their Listings, and nothing at all when there are none. Hidden keeps Listing pages as they are.', 'social-walls-for-hivepress' ),
+						'type'        => 'radio',
+						'default'     => 'hidden',
+						'_order'      => 16,
+
+						'options'     => [
+							'below'  => esc_html__( 'Below the description', 'social-walls-for-hivepress' ),
+							'above'  => esc_html__( 'Above the description', 'social-walls-for-hivepress' ),
+							'hidden' => esc_html__( 'Hidden', 'social-walls-for-hivepress' ),
+						],
+					],
+
+					'hpsw_listing_columns'  => [
+						'label'       => esc_html__( 'Columns on Listing Pages', 'social-walls-for-hivepress' ),
+						'description' => esc_html__( 'How many posts sit side by side on a Listing\'s page. Two suits most themes. Phones always show one post per row. Has no effect while the wall on Listing pages is hidden.', 'social-walls-for-hivepress' ),
+						'type'        => 'radio',
+						'default'     => '2',
+						'_order'      => 17,
+
+						'options'     => [
+							'1' => esc_html__( 'One', 'social-walls-for-hivepress' ),
+							'2' => esc_html__( 'Two', 'social-walls-for-hivepress' ),
+							'3' => esc_html__( 'Three', 'social-walls-for-hivepress' ),
+						],
+					],
+
+					'hpsw_per_page'         => [
 						'label'       => esc_html__( 'Posts per Page', 'social-walls-for-hivepress' ),
-						'description' => esc_html__( 'How many posts a Vendor\'s profile shows before the page numbers. The Social Wall block has its own number in the block settings.', 'social-walls-for-hivepress' ),
+						'description' => esc_html__( 'How many posts a Vendor\'s profile, or a Listing\'s page, shows before the page numbers. The Social Wall block has its own number in the block settings.', 'social-walls-for-hivepress' ),
 						'type'        => 'number',
 						'min_value'   => 1,
 						'max_value'   => 50,
@@ -101,14 +129,23 @@ return [
 						'_order'      => 20,
 					],
 
-					'hpsw_coupon_color'    => [
+					'hpsw_coupon_color'     => [
 						'label'       => esc_html__( 'Coupon Code Colour', 'social-walls-for-hivepress' ),
 						'description' => esc_html__( 'The colour of a Deal\'s coupon code, on the wall cards and on the post\'s own page. Leave it empty to keep your theme\'s own colour for codes. Choose one with strong contrast against your card background so the code stays easy to read.', 'social-walls-for-hivepress' ),
 						'type'        => 'color',
 						'_order'      => 25,
 					],
 
-					'hpsw_show_radius'     => [
+					'hpsw_photo_zoom'       => [
+						'label'       => esc_html__( 'Photo Zoom', 'social-walls-for-hivepress' ),
+						'caption'     => esc_html__( 'Let visitors click a post\'s photos to see them full size', 'social-walls-for-hivepress' ),
+						'description' => esc_html__( 'On a post\'s own page, clicking a photo opens it full size, and a photo on a wall card opens the post. Untick to show photos as plain pictures that do nothing when clicked, on the cards and on the post\'s page. Visitors still open a post from the other links on its card.', 'social-walls-for-hivepress' ),
+						'type'        => 'checkbox',
+						'default'     => true,
+						'_order'      => 26,
+					],
+
+					'hpsw_show_radius'      => [
 						'label'       => esc_html__( 'Distance Field', 'social-walls-for-hivepress' ),
 						'caption'     => esc_html__( 'Show the distance field on the wall filter', 'social-walls-for-hivepress' ),
 						'description' => esc_html__( 'The box where visitors choose how far from a place to look, next to the location box. Untick it to keep the filter shorter: the wall then always looks within the default search radius below. Needs the HivePress Geolocation extension.', 'social-walls-for-hivepress' ),
@@ -117,7 +154,7 @@ return [
 						'_order'      => 30,
 					],
 
-					'hpsw_default_radius'  => [
+					'hpsw_default_radius'   => [
 						'label'       => get_option( 'hp_geolocation_use_miles' ) ? esc_html__( 'Default Search Radius (miles)', 'social-walls-for-hivepress' ) : esc_html__( 'Default Search Radius (km)', 'social-walls-for-hivepress' ),
 						'description' => esc_html__( 'How far from the chosen place the wall looks when a visitor has not chosen a distance, or when the distance field is hidden. Leave it empty to use the default radius from the HivePress Geolocation settings.', 'social-walls-for-hivepress' ),
 						'type'        => 'number',

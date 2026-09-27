@@ -15,12 +15,13 @@ use HivePress\Models;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * A wall of posts: every Vendor's, or one Vendor's.
+ * A wall of posts: every Vendor's, one Vendor's, or those for one Listing.
  *
  * Because its meta carries a label, core registers it as the "Social Wall" Gutenberg block and as
  * the `[hivepress_hpsw_wall]` shortcode (components/class-editor.php:346-360, core 1.7.31). The
- * Vendor page uses the same class in `vendor` mode, which that page's template sets; the editor
- * offers no mode setting, so a block placed by hand is always the all-Vendors wall.
+ * Vendor and Listing pages use the same class in `vendor` and `listing` mode, which those pages'
+ * templates set; the editor offers no mode setting, so a block placed by hand is always the
+ * all-Vendors wall.
  *
  * Every setting is a string attribute whatever its field type (class-editor.php:158-160), so each
  * one is cast here before use.
@@ -28,7 +29,7 @@ defined( 'ABSPATH' ) || exit;
 class Hpsw_Wall extends Block {
 
 	/**
-	 * Mode: all or vendor.
+	 * Mode: all, vendor or listing.
 	 *
 	 * @var string
 	 */
@@ -144,6 +145,10 @@ class Hpsw_Wall extends Block {
 			return $this->render_vendor_wall();
 		}
 
+		if ( 'listing' === $this->mode ) {
+			return $this->render_listing_wall();
+		}
+
 		// A filter the block itself was set to beats one in the address.
 		$type = in_array( (string) $this->type, [ 'deal', 'update' ], true ) ? (string) $this->type : '';
 
@@ -168,6 +173,7 @@ class Hpsw_Wall extends Block {
 		$result = $wall->query_posts(
 			[
 				'vendor_ids' => $wall->get_filter_vendor_ids( $filters ),
+				'post_ids'   => $wall->get_location_post_ids( $filters ),
 				'type'       => $type,
 				'keyword'    => $keyword,
 				'number'     => max( 1, min( 50, absint( $this->number ) ) ),
@@ -239,6 +245,45 @@ class Hpsw_Wall extends Block {
 		$columns = (int) hpsw_get_choice_option( 'hpsw_vendor_columns', [ '1', '2', '3' ], '2' );
 
 		$output  = '<div class="hpsw-wall hpsw-wall--vendor">';
+		$output .= $wall->render_posts( $result['ids'], $columns );
+		$output .= $wall->render_pagination( $wall->get_page_number(), $result['pages'], 'wall' );
+		$output .= '</div>';
+
+		return $output;
+	}
+
+	/**
+	 * Renders the wall on a Listing page: the Vendor's live posts for this Listing, and those for all
+	 * their Listings.
+	 *
+	 * Returns an empty string when there are none, so the `optional` section around it disappears.
+	 *
+	 * @return string
+	 */
+	protected function render_listing_wall() {
+		$wall    = hivepress()->hpsw_wall;
+		$listing = $this->get_context( 'listing' );
+
+		if ( ! $listing instanceof Models\Listing || ! $listing->get_vendor__id() ) {
+			return '';
+		}
+
+		$result = $wall->query_posts(
+			[
+				'vendor_ids' => [ absint( $listing->get_vendor__id() ) ],
+				'listing_id' => $listing->get_id(),
+				'number'     => max( 1, min( 50, hpsw_get_number_option( 'hpsw_per_page', 5 ) ) ),
+				'page'       => $wall->get_page_number(),
+			]
+		);
+
+		if ( ! $result['ids'] ) {
+			return '';
+		}
+
+		$columns = (int) hpsw_get_choice_option( 'hpsw_listing_columns', [ '1', '2', '3' ], '2' );
+
+		$output  = '<div class="hpsw-wall hpsw-wall--listing">';
 		$output .= $wall->render_posts( $result['ids'], $columns );
 		$output .= $wall->render_pagination( $wall->get_page_number(), $result['pages'], 'wall' );
 		$output .= '</div>';
